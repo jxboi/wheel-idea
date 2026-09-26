@@ -1,12 +1,15 @@
+// @ts-check
 import { timingSafeEqual } from "node:crypto";
-import {
-  generateFromAPI,
-  generateLocal,
-  requestSchema,
-} from "../server/runtime.js";
+import { requestSchema } from "../shared/contract.js";
+import { generateFromAPI } from "../server/providers.js";
+import { generateLocal, localToolsEnabled } from "../server/local.js";
 
 export const config = { maxDuration: 120 };
 
+/**
+ * @param {string} left
+ * @param {string} right
+ */
 function equal(left, right) {
   return (
     Buffer.byteLength(left) === Buffer.byteLength(right) &&
@@ -14,6 +17,10 @@ function equal(left, right) {
   );
 }
 
+/**
+ * @param {import("../server/http").ApiRequest} req
+ * @param {import("../server/http").ApiResponse} res
+ */
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   if (req.method !== "POST")
@@ -40,10 +47,7 @@ export default async function handler(req, res) {
       .status(400)
       .json({ error: "Preview ideas are generated on your device." });
   const local = input.settings.provider.endsWith("-local");
-  if (
-    local &&
-    (process.env.VERCEL || process.env.ORBIT_ENABLE_LOCAL_CLI !== "true")
-  )
+  if (local && !localToolsEnabled())
     return res.status(400).json({
       error:
         "Local Codex and Claude are available only in local development with ORBIT_ENABLE_LOCAL_CLI=true.",
@@ -51,11 +55,13 @@ export default async function handler(req, res) {
   const suppliedKey = String(req.headers["x-provider-key"] ?? "");
   if (suppliedKey.length > 512)
     return res.status(400).json({ error: "Invalid API key." });
-  const environmentKey = {
+  /** @type {Record<string, string | undefined>} */
+  const environmentKeys = {
     openrouter: "OPENROUTER_API_KEY",
     openai: "OPENAI_API_KEY",
     anthropic: "ANTHROPIC_API_KEY",
-  }[input.settings.provider];
+  };
+  const environmentKey = environmentKeys[input.settings.provider];
   const key =
     suppliedKey || (environmentKey ? process.env[environmentKey] : "") || "";
   if (!local && !key)
@@ -71,12 +77,16 @@ export default async function handler(req, res) {
           "Enter the workspace password in Settings to use the server’s API key.",
       });
   }
+  // Stop paid provider work (and local CLI runs) when the browser goes away.
+  const disconnect = new AbortController();
+  res.on?.("close", () => {
+    if (!res.writableEnded) disconnect.abort();
+  });
   try {
-    return res
-      .status(200)
-      .json(
-        local ? await generateLocal(input) : await generateFromAPI(input, key),
-      );
+    const brief = local
+      ? await generateLocal(input, disconnect.signal)
+      : await generateFromAPI(input, key, disconnect.signal);
+    return res.status(200).json(brief);
   } catch (error) {
     const raw =
       error instanceof Error ? error.message : "Generation failed. Try again.";

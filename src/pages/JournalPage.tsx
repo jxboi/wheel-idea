@@ -10,7 +10,7 @@ import {
   LoaderCircle,
 } from "lucide-react";
 import { Modal } from "../components/Modal";
-import { imageFromFile } from "../lib/storage";
+import { imageFromFile } from "../lib/files";
 import type { Entry } from "../lib/schema";
 export function JournalPage({
   entries,

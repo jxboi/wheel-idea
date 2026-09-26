@@ -45,3 +45,22 @@ Intentional differences: native SVG/font rendering instead of raster UI; offline
 Repairs during QA: upright wheel labels, actual exclusion of forgotten feedback from AI context, journal navigation, unsaved-draft protection, image protocol validation, and development-only React root recreation caused by hot-reloading an inline error-boundary class. ErrorBoundary now lives in its own module; final fresh-load workflows completed normally.
 
 The browser’s full-page capture produced incorrect padding immediately after changing viewport size. Final evidence uses viewport screenshots taken after the viewport settled, at the stated sizes.
+
+# Verification — improvements pass, 26 September 2026
+
+## Automated
+
+`npm test` (50 passing tests in 6 files), `npm run build`, and `npm run format:check` passed. `tsc -b` now also type-checks the JavaScript server modules (`// @ts-check`). The API handler was imported under plain Node ESM to confirm the unbundled Vercel import graph resolves. Initial JavaScript dropped from 475 KB to 331 KB (143 KB → 100 KB gzipped) by lazy-loading secondary pages and the Markdown-based idea detail.
+
+## Browser checks
+
+Headless Chromium (Playwright) at **390×844** and **1440×900**, against `npm run dev`, in fresh browser profiles:
+
+- A database-v1 workspace (idea marked `cited`, journal entry with a photo, memory note) migrates on load. The idea now reads as unverified and the photo renders from binary storage.
+- Mood, time budget, category choice, and the no-repeat switch persist across reload.
+- A second tab shows the “open in another tab” warning.
+- A preview spin opens its brief through the lazily loaded detail view.
+- A provider spin, using a fixture response via request interception, labels sources “Found by search” / “Not confirmed by search”. It sends complete-JSON context with the shared journal and photo and the saved preferences, and never lands on a disabled category.
+- No horizontal overflow, and no console errors.
+
+No live provider calls were made. `pause_turn` continuation, provenance extraction, and abort-on-disconnect are verified with fixtures only; live provider response shapes, quotas, and billing on cancellation were not exercised. QA used throwaway browser profiles, so no workspace data was created or changed.
