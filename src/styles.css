@@ -94,9 +94,7 @@ svg {
 }
 button:focus-visible,
 a:focus-visible,
-select:focus-visible,
-input:focus-visible,
-textarea:focus-visible {
+input:is([type="checkbox"], [type="radio"], [type="range"]):focus-visible {
   outline: 3px solid #91add4;
   outline-offset: 4px;
 }
@@ -124,11 +122,13 @@ textarea {
   resize: vertical;
   min-height: 100px;
 }
+/* Text fields show focus with their own border and ring; an offset outline
+   would spill over neighbouring labels, especially on borderless fields. */
 input:focus,
 textarea:focus,
 select:focus {
   border-color: var(--blue);
-  box-shadow: 0 0 0 3px #45699f10;
+  box-shadow: 0 0 0 3px #45699f26;
 }
 input::placeholder,
 textarea::placeholder {
@@ -1155,7 +1155,7 @@ main:focus {
   font-size: 12px;
 }
 .search-field input:focus {
-  box-shadow: none;
+  box-shadow: 0 1px 0 var(--blue);
 }
 .idea-grid {
   display: grid;
@@ -1393,7 +1393,10 @@ main:focus {
   padding: 27px 34px 30px;
 }
 .journal-editor > time {
+  display: block;
   font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
 }
 .journal-title-input {
   font-family: var(--serif);
@@ -1405,9 +1408,17 @@ main:focus {
   border-radius: 0;
   letter-spacing: -0.7px;
 }
-.journal-title-input:focus,
+.journal-title-input:focus {
+  box-shadow: 0 1.5px 0 var(--blue);
+}
 .journal-body-input:focus {
   box-shadow: none;
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 33px,
+    #c6d3e6 33px,
+    #c6d3e6 34px
+  );
 }
 .journal-body-input {
   min-height: 230px;
@@ -1806,6 +1817,7 @@ main:focus {
 }
 .key-input:focus-within {
   border-color: var(--blue);
+  box-shadow: 0 0 0 3px #45699f26;
 }
 .research-note {
   display: flex;
@@ -2427,7 +2439,7 @@ main:focus {
   /* 16px keeps iOS Safari from zooming in on focus. */
   :is(.main-wrap, .modal)
     :is(
-      input:not([type="checkbox"]):not(.journal-title-input),
+      input:not([type="checkbox"]):not(.journal-title-input):not(.tuner-input),
       textarea,
       select
     ) {
@@ -2613,8 +2625,14 @@ main:focus {
   border-bottom: 1.5px solid var(--blue);
   border-radius: 6px 6px 0 0;
   padding: 0 4px;
-  max-width: 100%;
+  /* Sized by its size attribute, so it reads as a word in the sentence and the
+     full stop stays beside it. */
+  width: auto;
+  max-width: calc(100% - 0.5em);
   outline: none;
+}
+.tuner-input:focus {
+  box-shadow: none;
 }
 .tuner-input::placeholder {
   color: #45699f80;
