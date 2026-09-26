@@ -19,6 +19,10 @@ import {
 } from "./lib/storage";
 import * as actions from "./lib/actions";
 import {
+  isSettingsSection,
+  type SettingsSection,
+} from "./pages/settings/sections";
+import {
   useGeneration,
   type Credentials,
 } from "./features/generation/useGeneration";
@@ -33,9 +37,6 @@ const JournalPage = lazy(() =>
 const JournalEditor = lazy(() =>
   import("./pages/JournalPage").then((m) => ({ default: m.JournalEditor })),
 );
-const MemoryPage = lazy(() =>
-  import("./pages/MemoryPage").then((m) => ({ default: m.MemoryPage })),
-);
 const SettingsPage = lazy(() =>
   import("./pages/SettingsPage").then((m) => ({ default: m.SettingsPage })),
 );
@@ -43,16 +44,19 @@ const IdeaDetail = lazy(() =>
   import("./components/IdeaDetail").then((m) => ({ default: m.IdeaDetail })),
 );
 
-const validPages: Page[] = [
-  "wheel",
-  "library",
-  "journal",
-  "memory",
-  "settings",
-];
-function currentPage(): Page {
-  const p = location.hash.slice(1) as Page;
-  return validPages.includes(p) ? p : "wheel";
+const validPages: Page[] = ["wheel", "library", "journal", "settings"];
+type Route = { page: Page; section: SettingsSection | null };
+/** Reads `#page` or `#settings/<section>`. The old `#memory` page now lives in Settings. */
+function currentRoute(): Route {
+  const [head, sub = ""] = location.hash.slice(1).split("/");
+  if (head === "memory") return { page: "settings", section: "memory" };
+  if (head === "settings")
+    return {
+      page: "settings",
+      section: isSettingsSection(sub) ? sub : null,
+    };
+  const page = head as Page;
+  return { page: validPages.includes(page) ? page : "wheel", section: null };
 }
 export default function App() {
   const [workspace, setWorkspace] = useState<Workspace>(
@@ -63,7 +67,8 @@ export default function App() {
   const [upgradeBlocked, setUpgradeBlocked] = useState(false);
   const [otherTab, setOtherTab] = useState(false);
   const [saveError, setSaveError] = useState("");
-  const [page, setPage] = useState<Page>(currentPage);
+  const [route, setRoute] = useState<Route>(currentRoute);
+  const { page, section } = route;
   const [credentials, setCredentials] = useState<Credentials>({
     key: "",
     token: "",
@@ -110,7 +115,7 @@ export default function App() {
           "Orbit couldn’t open this browser’s storage. Your data has not been overwritten. Enable browser storage, then reload.",
         ),
       );
-    const fn = () => setPage(currentPage());
+    const fn = () => setRoute(currentRoute());
     window.addEventListener("hashchange", fn);
     return () => window.removeEventListener("hashchange", fn);
   }, []);
@@ -132,9 +137,9 @@ export default function App() {
         ),
       );
   }, [workspace, ready]);
-  const navigate = (p: Page) => {
-    location.hash = p;
-    setPage(p);
+  const navigate = (p: Page, sub: SettingsSection | null = null) => {
+    location.hash = sub ? `${p}/${sub}` : p;
+    setRoute({ page: p, section: sub });
     window.scrollTo({ top: 0, behavior: "instant" });
   };
   const newJournal = (photo = false) => {
@@ -192,7 +197,7 @@ export default function App() {
             {saveError}
             <button
               className="text-button"
-              onClick={() => navigate("settings")}
+              onClick={() => navigate("settings", "backup")}
             >
               Open Settings
             </button>
@@ -210,10 +215,10 @@ export default function App() {
             activity={generation.activity}
             error={generation.error}
             onSpin={generation.spin}
-            onSettings={() => navigate("settings")}
+            onSettings={() => navigate("settings", "model")}
             onJournal={newJournal}
             onOpenJournal={() => navigate("journal")}
-            onMemory={() => navigate("memory")}
+            onMemory={() => navigate("settings", "memory")}
             onCancel={generation.cancel}
           />
         )}
@@ -235,27 +240,28 @@ export default function App() {
               onDelete={(id) => setConfirmation({ type: "entry", id })}
             />
           )}
-          {page === "memory" && (
-            <MemoryPage
-              workspace={workspace}
-              onChange={(enabled) =>
-                update((w) => actions.setUseMemory(w, enabled))
-              }
-              onAdd={(text) => update((w) => actions.addMemory(w, text))}
-              onDelete={(id) => update((w) => actions.deleteMemory(w, id))}
-              onEdit={(memory) => update((w) => actions.editMemory(w, memory))}
-            />
-          )}
           {page === "settings" && (
             <SettingsPage
-              settings={workspace.settings}
+              section={section}
+              onSection={(sub) => navigate("settings", sub)}
+              workspace={workspace}
               onSave={(settings) => {
                 update((w) => actions.setSettings(w, settings));
                 generation.setError("");
               }}
               credentials={credentials}
               onCredentials={setCredentials}
-              workspace={workspace}
+              onPreferences={(p) => update((w) => actions.setPreferences(w, p))}
+              onUseMemory={(enabled) =>
+                update((w) => actions.setUseMemory(w, enabled))
+              }
+              onAddMemory={(text) => update((w) => actions.addMemory(w, text))}
+              onDeleteMemory={(id) =>
+                update((w) => actions.deleteMemory(w, id))
+              }
+              onEditMemory={(memory) =>
+                update((w) => actions.editMemory(w, memory))
+              }
               onImport={(w) => {
                 setWorkspace(w);
                 toast("Workspace restored.");

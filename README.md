@@ -69,6 +69,8 @@ The foundation is designed for a personal workspace. Before turning it into a sh
 
 ## Memory and privacy
 
+Memory lives in **Settings → Memory**, next to the global toggle. Settings is a list of sections (AI model, Memory, Wheel, Backup & restore, Privacy), each on its own page.
+
 With memory enabled, each connected spin receives up to 30 memory notes, 15 recent idea titles/categories/reactions (to avoid repetition), and the five most recently saved journal entries marked “Let this inspire future spins.” Up to two photos from those included entries are sent. Context is always complete JSON of at most 14,000 characters. Each section (memory notes, recent ideas, journal) has its own budget and is filled newest-first, so a long memory list can’t crowd out the journal. This is transparent context retrieval, not model training, embeddings, or a hidden profiling system. Explicit feedback is kept as memory, so editing or forgetting it controls what the model sees. Turning memory off excludes all personal context and photos. Offline examples do not use this context.
 
 Everything persists in this browser on this device. There is no cloud sync. Backups include personal journal content and images, but not credentials. Back up before clearing browser storage. Imported backups replace the workspace only after review and confirmation. Use one active tab per workspace. Orbit warns when it is open in another tab, but it does not merge changes between tabs.

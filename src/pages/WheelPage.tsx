@@ -1,22 +1,9 @@
 import { useState } from "react";
-import {
-  ArrowRight,
-  Plus,
-  ImagePlus,
-  Leaf,
-  LoaderCircle,
-  Check,
-  RotateCw,
-} from "lucide-react";
+import { ArrowRight, Plus, ImagePlus, Leaf, LoaderCircle } from "lucide-react";
 import { Wheel } from "../components/Wheel";
 import { Modal } from "../components/Modal";
-import {
-  categories,
-  type Category,
-  type Preferences,
-  type Settings,
-} from "../lib/schema";
-import { categoryColors } from "../components/Icons";
+import type { Preferences, Settings } from "../lib/schema";
+import { CategoryPicker } from "../features/wheel/CategoryPicker";
 import { ActivityPanel } from "../features/generation/ActivityPanel";
 import type { Activity } from "../features/generation/activity";
 import { Tuner } from "../features/tuner/Tuner";
@@ -53,17 +40,6 @@ export function WheelPage({
   onMemory: () => void;
   onCancel: () => void;
 }) {
-  const { enabled, avoidRepeat } = preferences;
-  const update = (change: Partial<Preferences>) =>
-    onPreferences({ ...preferences, ...change });
-  const toggle = (cat: Category) =>
-    update({
-      enabled: enabled.includes(cat)
-        ? enabled.length > 1
-          ? enabled.filter((c) => c !== cat)
-          : enabled
-        : categories.filter((c) => c === cat || enabled.includes(c)),
-    });
   const [customize, setCustomize] = useState(false);
   return (
     <>
@@ -158,37 +134,11 @@ export function WheelPage({
         <Modal title="Categories" onClose={() => setCustomize(false)}>
           <div className="modal-body">
             <p className="muted">Pick what the wheel can land on.</p>
-            <div className="category-picker">
-              {categories.map((cat, i) => (
-                <button
-                  key={cat}
-                  className={enabled.includes(cat) ? "checked" : ""}
-                  aria-pressed={enabled.includes(cat)}
-                  onClick={() => toggle(cat)}
-                >
-                  <i style={{ background: categoryColors[i] }} />
-                  {cat}
-                  {enabled.includes(cat) && <Check size={18} />}
-                </button>
-              ))}
-            </div>
-            <label className="toggle-row repeat-toggle">
-              <span>No repeats in a row</span>
-              <input
-                type="checkbox"
-                role="switch"
-                checked={avoidRepeat}
-                onChange={(e) => update({ avoidRepeat: e.target.checked })}
-              />
-            </label>
+            <CategoryPicker
+              preferences={preferences}
+              onPreferences={onPreferences}
+            />
             <div className="button-row">
-              <button
-                className="text-button"
-                onClick={() => update({ enabled: [...categories] })}
-              >
-                <RotateCw size={15} />
-                Reset
-              </button>
               <button
                 className="button primary"
                 onClick={() => setCustomize(false)}

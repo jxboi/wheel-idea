@@ -3,12 +3,14 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { WheelPage } from "../src/pages/WheelPage";
 import { IdeaDetail } from "../src/components/IdeaDetail";
+import { SettingsPage } from "../src/pages/SettingsPage";
 import { ActivityPanel } from "../src/features/generation/ActivityPanel";
 import { applyEvent, newActivity } from "../src/features/generation/activity";
 import { previewBrief } from "../src/lib/preview";
 import {
   defaultPreferences,
   defaultSettings,
+  emptyWorkspace,
   type Idea,
   type Preferences,
 } from "../src/lib/schema";
@@ -176,5 +178,50 @@ describe("activity panel", () => {
   it("says so when memory is off", () => {
     panel({ ...base, ingredients: { ...base.ingredients, memory: null } });
     expect(screen.getByText("Memory off")).toBeTruthy();
+  });
+});
+
+describe("SettingsPage", () => {
+  const noop = () => {};
+  const props = {
+    workspace: emptyWorkspace,
+    onSave: noop,
+    credentials: { key: "", token: "" },
+    onCredentials: noop,
+    onPreferences: noop,
+    onUseMemory: noop,
+    onAddMemory: noop,
+    onDeleteMemory: noop,
+    onEditMemory: noop,
+    onImport: noop,
+    toast: noop,
+  };
+
+  it("lists sections and opens the one tapped", () => {
+    const onSection = vi.fn();
+    render(<SettingsPage {...props} section={null} onSection={onSection} />);
+    fireEvent.click(screen.getByRole("button", { name: /^Memory/ }));
+    expect(onSection).toHaveBeenCalledWith("memory");
+    for (const name of [/^AI model/, /^Wheel/, /^Backup/, /^Privacy/])
+      expect(screen.getByRole("button", { name })).toBeTruthy();
+  });
+
+  it("shows the memory toggle on the memory sub-page and goes back", () => {
+    const onSection = vi.fn();
+    const onUseMemory = vi.fn();
+    render(
+      <SettingsPage
+        {...props}
+        onUseMemory={onUseMemory}
+        section="memory"
+        onSection={onSection}
+      />,
+    );
+    fireEvent.click(screen.getByRole("switch"));
+    expect(onUseMemory).toHaveBeenCalledWith(
+      !emptyWorkspace.settings.useMemory,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Settings" }));
+    expect(onSection).toHaveBeenCalledWith(null);
   });
 });

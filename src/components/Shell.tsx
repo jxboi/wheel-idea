@@ -2,19 +2,17 @@ import {
   CircleDot,
   BookOpen,
   NotebookPen,
-  Database,
   Settings,
   Monitor,
   ChevronDown,
 } from "lucide-react";
 import { BrandMark } from "./Icons";
 import type { ReactNode } from "react";
-export type Page = "wheel" | "library" | "journal" | "memory" | "settings";
+export type Page = "wheel" | "library" | "journal" | "settings";
 const nav = [
   ["wheel", "The wheel", CircleDot],
   ["library", "Idea library", BookOpen],
   ["journal", "Journal", NotebookPen],
-  ["memory", "Memory", Database],
 ] as const;
 export function Shell({
   page,
@@ -54,6 +52,7 @@ export function Shell({
         </nav>
         <div className="sidebar-bottom">
           <button
+            aria-current={page === "settings" ? "page" : undefined}
             className={`nav-link ${page === "settings" ? "active" : ""}`}
             onClick={() => onNavigate("settings")}
           >
