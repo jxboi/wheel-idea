@@ -4,13 +4,7 @@ import {
   Plus,
   ImagePlus,
   Leaf,
-  Clock,
-  CalendarDays,
-  Rocket,
-  Brain,
-  ChevronDown,
   LoaderCircle,
-  SlidersHorizontal,
   Check,
   RotateCw,
 } from "lucide-react";
@@ -18,7 +12,6 @@ import { Wheel } from "../components/Wheel";
 import { Modal } from "../components/Modal";
 import {
   categories,
-  providerNames,
   type Category,
   type Preferences,
   type Settings,
@@ -26,6 +19,7 @@ import {
 import { categoryColors } from "../components/Icons";
 import { ActivityPanel } from "../features/generation/ActivityPanel";
 import type { Activity } from "../features/generation/activity";
+import { Tuner } from "../features/tuner/Tuner";
 export function WheelPage({
   settings,
   preferences,
@@ -59,7 +53,7 @@ export function WheelPage({
   onMemory: () => void;
   onCancel: () => void;
 }) {
-  const { mood, duration, enabled, avoidRepeat } = preferences;
+  const { enabled, avoidRepeat } = preferences;
   const update = (change: Partial<Preferences>) =>
     onPreferences({ ...preferences, ...change });
   const toggle = (cat: Category) =>
@@ -97,17 +91,9 @@ export function WheelPage({
                 </>
               )}
             </button>
-            {busy ? (
+            {busy && (
               <button className="text-button category-edit" onClick={onCancel}>
                 Cancel
-              </button>
-            ) : (
-              <button
-                className="text-button category-edit"
-                onClick={() => setCustomize(true)}
-              >
-                <SlidersHorizontal size={14} />
-                {enabled.length} of 8 categories
               </button>
             )}
           </div>
@@ -122,65 +108,13 @@ export function WheelPage({
             />
           </div>
         )}
-        <section className="mood-panel">
-          <h2>
-            What are you in
-            <br className="panel-break" /> the mood for?
-          </h2>
-          <label className="sr-only" htmlFor="mood">
-            What are you in the mood for?
-          </label>
-          <div className="mood-input">
-            <textarea
-              id="mood"
-              maxLength={200}
-              value={mood}
-              onChange={(e) => update({ mood: e.target.value })}
-              placeholder="Optional: small, useful, a little unexpected…"
-            />
-            {mood.length > 150 && <span>{mood.length}/200</span>}
-          </div>
-          <fieldset className="time-field">
-            <legend>Time to build</legend>
-            <div className="time-options">
-              {(
-                [
-                  ["A few hours", Clock],
-                  ["A weekend", CalendarDays],
-                  ["Go big", Rocket],
-                ] as const
-              ).map(([name, Icon]) => (
-                <button
-                  type="button"
-                  key={name}
-                  aria-pressed={duration === name}
-                  className={duration === name ? "selected" : ""}
-                  onClick={() => update({ duration: name })}
-                >
-                  <Icon size={17} />
-                  {name}
-                </button>
-              ))}
-            </div>
-          </fieldset>
-          <div className="copilot">
-            <label>
-              <Brain size={20} />
-              Your creative copilot
-            </label>
-            <button className="select-button" onClick={onSettings}>
-              <span>
-                {settings.provider === "preview"
-                  ? "Configure AI"
-                  : providerNames[settings.provider]}
-              </span>
-              <ChevronDown size={16} />
-            </button>
-            {settings.provider !== "preview" && (
-              <p>{settings.model || "CLI default model"}</p>
-            )}
-          </div>
-        </section>
+        <Tuner
+          preferences={preferences}
+          onPreferences={onPreferences}
+          settings={settings}
+          onCategories={() => setCustomize(true)}
+          onSettings={onSettings}
+        />
       </div>
       {error && (
         <div className="error-banner" role="alert">

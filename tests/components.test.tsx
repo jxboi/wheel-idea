@@ -50,6 +50,8 @@ function renderWheel(preferences: Preferences = defaultPreferences) {
 describe("wheel page", () => {
   it("saves mood and time budget as preferences", () => {
     const { onPreferences } = renderWheel();
+    expect(screen.getByRole("button", { name: /Mood: anything/ })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /Mood: anything/ }));
     fireEvent.change(screen.getByLabelText("What are you in the mood for?"), {
       target: { value: "tiny tools" },
     });
@@ -57,7 +59,12 @@ describe("wheel page", () => {
       ...defaultPreferences,
       mood: "tiny tools",
     });
+    expect(screen.queryByRole("button", { name: "Go big" })).toBeNull();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Time to build: A few hours" }),
+    );
     fireEvent.click(screen.getByRole("button", { name: "Go big" }));
+    expect(screen.queryByRole("button", { name: "Go big" })).toBeNull();
     expect(onPreferences).toHaveBeenLastCalledWith({
       ...defaultPreferences,
       duration: "Go big",
