@@ -22,16 +22,14 @@ import {
   categories,
   providerNames,
   type Category,
+  type Preferences,
   type Settings,
 } from "../lib/schema";
 import { categoryColors } from "../components/Icons";
-export type SpinInput = {
-  mood: string;
-  duration: "A few hours" | "A weekend" | "Go big";
-  enabled: Category[];
-};
 export function WheelPage({
   settings,
+  preferences,
+  onPreferences,
   busy,
   rotation,
   selected,
@@ -45,22 +43,31 @@ export function WheelPage({
   onCancel,
 }: {
   settings: Settings;
+  preferences: Preferences;
+  onPreferences: (preferences: Preferences) => void;
   busy: boolean;
   rotation: number;
   selected: string | null;
   status: string;
   error: string;
-  onSpin: (input: SpinInput) => void;
+  onSpin: () => void;
   onSettings: () => void;
   onJournal: (photo?: boolean) => void;
   onOpenJournal: () => void;
   onMemory: () => void;
   onCancel: () => void;
 }) {
-  const [mood, setMood] = useState("");
-  const [duration, setDuration] =
-    useState<SpinInput["duration"]>("A few hours");
-  const [enabled, setEnabled] = useState<Category[]>([...categories]);
+  const { mood, duration, enabled, avoidRepeat } = preferences;
+  const update = (change: Partial<Preferences>) =>
+    onPreferences({ ...preferences, ...change });
+  const toggle = (cat: Category) =>
+    update({
+      enabled: enabled.includes(cat)
+        ? enabled.length > 1
+          ? enabled.filter((c) => c !== cat)
+          : enabled
+        : categories.filter((c) => c === cat || enabled.includes(c)),
+    });
   const [customize, setCustomize] = useState(false);
   return (
     <>
@@ -75,7 +82,7 @@ export function WheelPage({
             <button
               className="button primary spin-button"
               disabled={busy}
-              onClick={() => onSpin({ mood, duration, enabled })}
+              onClick={onSpin}
             >
               {busy ? (
                 <>
@@ -127,7 +134,7 @@ export function WheelPage({
               id="mood"
               maxLength={200}
               value={mood}
-              onChange={(e) => setMood(e.target.value)}
+              onChange={(e) => update({ mood: e.target.value })}
               placeholder="Something small, useful, and a little unexpected…"
             />
             <span>{mood.length}/200</span>
@@ -147,7 +154,7 @@ export function WheelPage({
                   key={name}
                   aria-pressed={duration === name}
                   className={duration === name ? "selected" : ""}
-                  onClick={() => setDuration(name)}
+                  onClick={() => update({ duration: name })}
                 >
                   <Icon size={17} />
                   {name}
@@ -227,7 +234,8 @@ export function WheelPage({
             <h2>Leave room for possibility.</h2>
             <p className="muted">
               Choose the categories you’re open to. Every active category has an
-              equal chance.
+              equal chance
+              {avoidRepeat ? ", except the last one you landed on" : ""}.
             </p>
             <div className="category-picker">
               {categories.map((cat, i) => (
@@ -235,15 +243,7 @@ export function WheelPage({
                   key={cat}
                   className={enabled.includes(cat) ? "checked" : ""}
                   aria-pressed={enabled.includes(cat)}
-                  onClick={() =>
-                    setEnabled((prev) =>
-                      prev.includes(cat)
-                        ? prev.length > 1
-                          ? prev.filter((c) => c !== cat)
-                          : prev
-                        : [...prev, cat],
-                    )
-                  }
+                  onClick={() => toggle(cat)}
                 >
                   <i style={{ background: categoryColors[i] }} />
                   {cat}
@@ -255,10 +255,22 @@ export function WheelPage({
               Keep at least one category selected. All eight remain visible on
               the wheel.
             </p>
+            <label className="toggle-row repeat-toggle">
+              <span>
+                Don’t land on the same category twice in a row. Applies when two
+                or more are active.
+              </span>
+              <input
+                type="checkbox"
+                role="switch"
+                checked={avoidRepeat}
+                onChange={(e) => update({ avoidRepeat: e.target.checked })}
+              />
+            </label>
             <div className="button-row">
               <button
                 className="text-button"
-                onClick={() => setEnabled([...categories])}
+                onClick={() => update({ enabled: [...categories] })}
               >
                 <RotateCw size={15} />
                 Reset

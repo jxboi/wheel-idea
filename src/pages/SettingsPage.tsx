@@ -19,10 +19,10 @@ import {
   type Settings,
   type Provider,
   type Workspace,
-  workspaceSchema,
 } from "../lib/schema";
-import { download } from "../lib/storage";
-export type Credentials = { key: string; token: string };
+import { safeParseWorkspace } from "../lib/migrations";
+import { download } from "../lib/files";
+import type { Credentials } from "../features/generation/useGeneration";
 export function SettingsPage({
   settings,
   onSave,
@@ -269,7 +269,7 @@ export function SettingsPage({
                 try {
                   if (file.size > 30 * 1024 * 1024)
                     throw new Error("Choose a backup smaller than 30 MB.");
-                  const parsed = workspaceSchema.safeParse(
+                  const parsed = safeParseWorkspace(
                     JSON.parse(await file.text()),
                   );
                   if (!parsed.success)

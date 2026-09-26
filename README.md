@@ -29,7 +29,9 @@ API keys entered in Settings remain **in memory for this tab only**. They are se
 
 Alternatively, copy `.env.example` to `.env` and set `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, or `ANTHROPIC_API_KEY` on your server. No secret uses a `VITE_` prefix. Empty key input uses the matching server credential.
 
-Search and reasoning capabilities depend on the model. Preset IDs are starting points, not an up-to-date catalog or a guarantee of availability. Provider errors are displayed without quietly substituting preview content. Sources returned by the model are linked and labeled; missing sources are explicitly marked unverified. A provider may decline or fail to search even when a tool is offered.
+Search and reasoning capabilities depend on the model. Preset IDs are starting points, not an up-to-date catalog or a guarantee of availability. Provider errors are displayed without quietly substituting preview content. Sources are checked against the pages the provider’s search tool actually returned (Claude web search results and citations, OpenAI search sources and URL citations, OpenRouter URL citations). Each link is labeled “Found by search” or “Not confirmed by search”. An idea is **cited** only when at least one source matches, **unverified** when sources were listed but none matched, and **uncited** when there are none. Local CLIs don’t expose their search results, so their sources always show as unverified. A match means the page was retrieved, not that it supports the claim. A provider may decline or fail to search even when a tool is offered.
+
+Cancelling a spin, or closing the tab, aborts the request, and the server then aborts the provider call or kills the local CLI. Claude web-search turns that pause mid-research are resumed up to three times before Orbit reports an error.
 
 ### Local Codex / Claude
 
@@ -61,14 +63,15 @@ The foundation is designed for a personal workspace. Before turning it into a sh
 - Idea library with search, category filters, saving, reactions, copy/download, and deletion.
 - Feedback that becomes inspectable, editable memory. Forgetting a memory actually excludes that note from future requests.
 - Journal entries with up to four compressed photos, explicit sharing controls, and unsaved-change protection.
-- Local IndexedDB storage, versioned validation, backup export/import, schema checks, and visible storage errors.
+- Local IndexedDB storage with one record per idea, entry, memory, and photo (photos are stored as binary). Each change writes only the records that changed. Also: versioned validation with explicit migrations, backup export/import (v1 backups are migrated on import), and visible storage errors.
+- Wheel mood, time budget, categories, and an optional “don’t repeat the last category” setting are saved with the workspace.
 - No analytics, trackers, stock imagery, or fabricated user history.
 
 ## Memory and privacy
 
-With memory enabled, each connected spin receives up to 30 memory notes, 15 recent idea titles/categories/reactions (to avoid repetition), and the five most recently saved journal entries marked “Let this inspire future spins.” Up to two photos from those entries are included. Context is bounded to 14,000 characters. This is transparent context retrieval, not model training, embeddings, or a hidden profiling system. Explicit feedback is kept as memory, so editing or forgetting it controls what the model sees. Turning memory off excludes all personal context and photos. Offline examples do not use this context.
+With memory enabled, each connected spin receives up to 30 memory notes, 15 recent idea titles/categories/reactions (to avoid repetition), and the five most recently saved journal entries marked “Let this inspire future spins.” Up to two photos from those included entries are sent. Context is always complete JSON of at most 14,000 characters. Each section (memory notes, recent ideas, journal) has its own budget and is filled newest-first, so a long memory list can’t crowd out the journal. This is transparent context retrieval, not model training, embeddings, or a hidden profiling system. Explicit feedback is kept as memory, so editing or forgetting it controls what the model sees. Turning memory off excludes all personal context and photos. Offline examples do not use this context.
 
-Everything persists in this browser on this device. There is no cloud sync. Backups include personal journal content and images, but not credentials. Back up before clearing browser storage. Imported backups replace the workspace only after review and confirmation. Use one active tab per workspace; cross-tab merge/conflict handling is a future extension.
+Everything persists in this browser on this device. There is no cloud sync. Backups include personal journal content and images, but not credentials. Back up before clearing browser storage. Imported backups replace the workspace only after review and confirmation. Use one active tab per workspace. Orbit warns when it is open in another tab, but it does not merge changes between tabs.
 
 ## Validate and extend
 

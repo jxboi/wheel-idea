@@ -8,7 +8,8 @@ import {
   categories,
 } from "../src/lib/schema";
 import { previewBrief } from "../src/lib/preview";
-import { parseBrief, generateFromAPI } from "../server/providers";
+import { parseBrief, generateFromAPI } from "../server/providers.js";
+import { parseWorkspace } from "../src/lib/migrations";
 import handler from "../api/generate.js";
 
 describe("wheel geometry", () => {
@@ -86,8 +87,58 @@ describe("validation", () => {
   });
   it("rejects invalid backup versions without coercion", () => {
     expect(
-      workspaceSchema.safeParse({ ...emptyWorkspace, version: 2 }).success,
+      workspaceSchema.safeParse({ ...emptyWorkspace, version: 3 }).success,
     ).toBe(false);
+    expect(() => parseWorkspace({ ...emptyWorkspace, version: 3 })).toThrow();
+    expect(() => parseWorkspace({ version: 1, settings: {} })).toThrow();
+  });
+  it("migrates v1 backups and stops calling model-listed sources cited", () => {
+    const brief = previewBrief("Games", "A weekend", "");
+    const idea = {
+      ...brief,
+      sources: [{ title: "A page", url: "https://example.com/a" }],
+      id: "i1",
+      category: "Games",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      provider: "openai",
+      model: "m",
+      effort: "default",
+      duration: "A weekend",
+      saved: true,
+      feedback: [],
+      rating: "love",
+      researchStatus: "cited",
+    };
+    const v1 = {
+      version: 1,
+      settings: emptyWorkspace.settings,
+      ideas: [idea, { ...idea, id: "i2", researchStatus: "uncited" }],
+      entries: [],
+      memories: [],
+    };
+    const migrated = parseWorkspace(v1);
+    expect(migrated.version).toBe(2);
+    expect(migrated.preferences).toEqual(emptyWorkspace.preferences);
+    expect(migrated.ideas.map((i) => i.researchStatus)).toEqual([
+      "unverified",
+      "uncited",
+    ]);
+    expect(migrated.ideas[0].sources[0].url).toBe("https://example.com/a");
+  });
+  it("finds the brief after prose that contains braces", () => {
+    const brief = previewBrief("Games", "A weekend", "");
+    const raw = `Here is {one} idea:\n${JSON.stringify(brief)}`;
+    expect(parseBrief(raw).title).toBe(brief.title);
+  });
+  it("never trusts a verified flag written by the model", () => {
+    const brief = previewBrief("Games", "A weekend", "");
+    const parsed = parseBrief(
+      JSON.stringify({
+        ...brief,
+        sources: [{ title: "x", url: "https://x.dev", verified: true }],
+      }),
+    );
+    expect(parsed.sources[0]).toEqual({ title: "x", url: "https://x.dev" });
   });
   it("rejects unsupported images and invalid categories", () => {
     expect(requestSchema.safeParse({ category: "invalid" }).success).toBe(
@@ -175,12 +226,177 @@ describe("provider contracts", () => {
     ).rejects.toThrow("401");
   });
 });
+const apiInput = (provider: "openrouter" | "openai" | "anthropic") => ({
+  category: "Games" as const,
+  duration: "A few hours" as const,
+  mood: "",
+  settings: {
+    provider,
+    model: "m",
+    effort: "default" as const,
+    useMemory: false,
+  },
+  context: "",
+  images: [],
+});
+const ok = (payload: unknown) => ({ ok: true, json: async () => payload });
+describe("research provenance and continuation", () => {
+  const brief = previewBrief("Games", "A few hours", "");
+  it("continues a paused Anthropic turn and verifies sources it searched", async () => {
+    const withSources = JSON.stringify({
+      ...brief,
+      sources: [
+        { title: "Found", url: "https://www.example.com/post/?utm_source=x" },
+        { title: "Invented", url: "https://made-up.example/post" },
+      ],
+    });
+    const mock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        ok({
+          stop_reason: "pause_turn",
+          content: [
+            {
+              type: "server_tool_use",
+              id: "s1",
+              name: "web_search",
+              input: {},
+            },
+            {
+              type: "web_search_tool_result",
+              tool_use_id: "s1",
+              content: [
+                {
+                  type: "web_search_result",
+                  url: "https://example.com/post",
+                  title: "Found",
+                },
+              ],
+            },
+          ],
+        }),
+      )
+      .mockResolvedValueOnce(
+        ok({
+          stop_reason: "end_turn",
+          content: [
+            { type: "text", text: withSources.slice(0, 40) },
+            { type: "text", text: withSources.slice(40) },
+          ],
+        }),
+      );
+    vi.stubGlobal("fetch", mock);
+    const result = await generateFromAPI(apiInput("anthropic"), "k");
+    expect(mock).toHaveBeenCalledTimes(2);
+    const second = JSON.parse(mock.mock.calls[1][1].body);
+    expect(second.messages).toHaveLength(2);
+    expect(second.messages[1].role).toBe("assistant");
+    expect(second.messages[1].content[0].type).toBe("server_tool_use");
+    expect(result.sources.map((s) => s.verified)).toEqual([true, false]);
+  });
+  it("stops after a bounded number of continuations", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(ok({ stop_reason: "pause_turn", content: [] })),
+    );
+    await expect(generateFromAPI(apiInput("anthropic"), "k")).rejects.toThrow(
+      "Research did not finish",
+    );
+  });
+  it("uses OpenAI search sources and url citations", async () => {
+    const mock = vi.fn().mockResolvedValue(
+      ok({
+        status: "completed",
+        output: [
+          {
+            type: "web_search_call",
+            action: { sources: [{ type: "url", url: "https://a.dev/x" }] },
+          },
+          {
+            type: "message",
+            content: [
+              {
+                type: "output_text",
+                text: JSON.stringify({
+                  ...brief,
+                  sources: [{ title: "A", url: "https://a.dev/x/" }],
+                }),
+                annotations: [],
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    vi.stubGlobal("fetch", mock);
+    const result = await generateFromAPI(apiInput("openai"), "k");
+    expect(JSON.parse(mock.mock.calls[0][1].body).include).toContain(
+      "web_search_call.action.sources",
+    );
+    expect(result.sources).toEqual([
+      { title: "A", url: "https://a.dev/x/", verified: true },
+    ]);
+  });
+  it("surfaces OpenRouter citations when the model listed none", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        ok({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify(brief),
+                annotations: [
+                  {
+                    type: "url_citation",
+                    url_citation: { url: "https://b.dev/y", title: "B" },
+                  },
+                  {
+                    type: "url_citation",
+                    url_citation: { url: "javascript:x" },
+                  },
+                ],
+              },
+            },
+          ],
+        }),
+      ),
+    );
+    const result = await generateFromAPI(apiInput("openrouter"), "k");
+    expect(result.sources).toEqual([
+      { title: "B", url: "https://b.dev/y", verified: true },
+    ]);
+  });
+  it("passes the caller's abort signal to the provider request", async () => {
+    const mock = vi
+      .fn()
+      .mockImplementation(
+        (_url: string, init: RequestInit) =>
+          new Promise((_resolve, reject) =>
+            init.signal?.addEventListener("abort", () =>
+              reject(new Error("This operation was aborted")),
+            ),
+          ),
+      );
+    vi.stubGlobal("fetch", mock);
+    const controller = new AbortController();
+    const pending = generateFromAPI(
+      apiInput("openrouter"),
+      "k",
+      controller.signal,
+    );
+    controller.abort();
+    await expect(pending).rejects.toThrow("aborted");
+  });
+});
 describe("endpoint boundaries", () => {
   function res() {
     return {
       setHeader: vi.fn(),
       status: vi.fn().mockReturnThis(),
       json: vi.fn().mockReturnThis(),
+      on: vi.fn(),
+      writableEnded: false,
     };
   }
   it("rejects invalid payloads", async () => {
@@ -254,5 +470,35 @@ describe("endpoint boundaries", () => {
       r as never,
     );
     expect(r.status).toHaveBeenCalledWith(400);
+  });
+  it("aborts provider work when the browser disconnects", async () => {
+    let signal: AbortSignal | undefined;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation(
+        (_url: string, init: RequestInit) =>
+          new Promise((_resolve, reject) => {
+            signal = init.signal ?? undefined;
+            signal?.addEventListener("abort", () =>
+              reject(new Error("This operation was aborted")),
+            );
+          }),
+      ),
+    );
+    const r = res();
+    const pending = handler(
+      {
+        method: "POST",
+        headers: { "x-provider-key": "k" },
+        body: apiInput("openrouter"),
+      } as never,
+      r as never,
+    );
+    await vi.waitFor(() => expect(signal).toBeDefined());
+    const onClose = r.on.mock.calls.find(([event]) => event === "close")?.[1];
+    onClose();
+    await pending;
+    expect(signal?.aborted).toBe(true);
+    expect(r.status).toHaveBeenCalledWith(502);
   });
 });

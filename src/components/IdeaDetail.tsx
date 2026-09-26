@@ -17,7 +17,7 @@ import Markdown from "react-markdown";
 import { Modal } from "./Modal";
 import { categoryColors } from "./Icons";
 import { categories, providerNames, type Idea } from "../lib/schema";
-import { download } from "../lib/storage";
+import { download } from "../lib/files";
 export function IdeaDetail({
   idea,
   onClose,
@@ -129,6 +129,12 @@ export function IdeaDetail({
                   unverified research.
                 </p>
               )}
+              {idea.researchStatus === "unverified" && (
+                <p className="inline-note">
+                  None of the listed sources could be matched to pages the
+                  model’s search actually returned. Treat them as unverified.
+                </p>
+              )}
               <h3>The first version</h3>
               <ol className="feature-list">
                 {idea.features.map((f, i) => (
@@ -152,15 +158,21 @@ export function IdeaDetail({
                         <Globe size={16} />
                         <span>
                           {s.title}
-                          <small>{new URL(s.url).hostname}</small>
+                          <small>
+                            {new URL(s.url).hostname}
+                            {s.verified === true
+                              ? " · Found by search"
+                              : " · Not confirmed by search"}
+                          </small>
                         </span>
                         <ExternalLink size={14} />
                       </a>
                     ))}
                   </div>
                   <p className="small muted">
-                    Sources returned by your model; verify important claims
-                    before building.
+                    “Found by search” means the link matches a page your
+                    provider’s search tool returned. It does not confirm what
+                    the page says, so verify important claims before building.
                   </p>
                 </>
               )}
