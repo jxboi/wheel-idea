@@ -169,28 +169,135 @@ afterEach(() => {
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
 });
+
+/** Serve events as a server-sent event stream, in small uneven chunks. */
+function sse(events: unknown[], named = false) {
+  const text = events
+    .map((event) =>
+      named
+        ? `event: ${(event as { type: string }).type}\ndata: ${JSON.stringify(event)}\n\n`
+        : `data: ${typeof event === "string" ? event : JSON.stringify(event)}\n\n`,
+    )
+    .join("");
+  const bytes = new TextEncoder().encode(`: keep-alive\n\n${text}`);
+  return new Response(
+    new ReadableStream({
+      start(controller) {
+        for (let i = 0; i < bytes.length; i += 37)
+          controller.enqueue(bytes.slice(i, i + 37));
+        controller.close();
+      },
+    }),
+  );
+}
+const pieces = (text: string) => text.match(/[\s\S]{1,60}/g) ?? [];
+/** A chat completion as OpenRouter streams it. */
+function openRouterStream(message: {
+  content: string;
+  annotations?: unknown[];
+}) {
+  return sse([
+    { choices: [{ delta: { reasoning: "Considering puzzles. " } }] },
+    ...pieces(message.content).map((content) => ({
+      choices: [{ delta: { content } }],
+    })),
+    {
+      choices: [
+        {
+          delta: { annotations: message.annotations ?? [] },
+          finish_reason: "stop",
+        },
+      ],
+    },
+    "[DONE]",
+  ]);
+}
+/** A Responses API result as it streams: deltas, finished items, then the whole response. */
+function openAIStream(response: {
+  status: string;
+  output: {
+    type?: string;
+    content?: { type: string; text?: string; annotations?: unknown[] }[];
+  }[];
+}) {
+  return sse([
+    ...response.output.flatMap((item) => [
+      ...(item.content ?? [])
+        .filter((part) => part.type === "output_text")
+        .flatMap((part) =>
+          pieces(part.text ?? "").map((delta) => ({
+            type: "response.output_text.delta",
+            delta,
+          })),
+        ),
+      { type: "response.output_item.done", item },
+    ]),
+    {
+      type: `response.${response.status === "incomplete" ? "incomplete" : "completed"}`,
+      response,
+    },
+  ]);
+}
+/** A Messages API turn as it streams, block by block. */
+function anthropicStream(message: {
+  stop_reason: string;
+  content: Record<string, unknown>[];
+}) {
+  const events: unknown[] = [{ type: "message_start", message: {} }];
+  message.content.forEach((block, index) => {
+    if (block.type === "text") {
+      events.push({
+        type: "content_block_start",
+        index,
+        content_block: { type: "text", text: "" },
+      });
+      for (const text of pieces(block.text as string))
+        events.push({
+          type: "content_block_delta",
+          index,
+          delta: { type: "text_delta", text },
+        });
+    } else if (block.type === "server_tool_use") {
+      events.push({
+        type: "content_block_start",
+        index,
+        content_block: { ...block, input: {} },
+      });
+      const input = JSON.stringify(block.input);
+      for (const partial_json of [input.slice(0, 5), input.slice(5)])
+        events.push({
+          type: "content_block_delta",
+          index,
+          delta: { type: "input_json_delta", partial_json },
+        });
+    } else
+      events.push({ type: "content_block_start", index, content_block: block });
+    events.push({ type: "content_block_stop", index });
+  });
+  events.push(
+    { type: "message_delta", delta: { stop_reason: message.stop_reason } },
+    { type: "message_stop" },
+  );
+  return sse(events, true);
+}
 describe("provider contracts", () => {
   const brief = previewBrief("Games", "A few hours", "");
   for (const provider of ["openrouter", "openai", "anthropic"] as const)
     it(`${provider} includes search, model, and thinking settings`, async () => {
-      const payload =
+      const text = JSON.stringify(brief);
+      const mock = vi.fn().mockResolvedValue(
         provider === "openrouter"
-          ? { choices: [{ message: { content: JSON.stringify(brief) } }] }
+          ? openRouterStream({ content: text })
           : provider === "openai"
-            ? {
+            ? openAIStream({
                 status: "completed",
-                output: [
-                  {
-                    content: [
-                      { type: "output_text", text: JSON.stringify(brief) },
-                    ],
-                  },
-                ],
-              }
-            : { content: [{ type: "text", text: JSON.stringify(brief) }] };
-      const mock = vi
-        .fn()
-        .mockResolvedValue({ ok: true, json: async () => payload });
+                output: [{ content: [{ type: "output_text", text }] }],
+              })
+            : anthropicStream({
+                stop_reason: "end_turn",
+                content: [{ type: "text", text }],
+              }),
+      );
       vi.stubGlobal("fetch", mock);
       const result = await generateFromAPI(
         {
@@ -210,6 +317,7 @@ describe("provider contracts", () => {
       );
       expect(result.title).toBe(brief.title);
       const body = JSON.parse(mock.mock.calls[0][1].body);
+      expect(body.stream).toBe(true);
       expect(body.model).toBe("test-model");
       expect(body.tools).toHaveLength(1);
       expect(body.reasoning?.effort ?? body.output_config?.effort).toBe(
@@ -258,7 +366,6 @@ const apiInput = (provider: "openrouter" | "openai" | "anthropic") => ({
   context: "",
   images: [],
 });
-const ok = (payload: unknown) => ({ ok: true, json: async () => payload });
 describe("research provenance and continuation", () => {
   const brief = previewBrief("Games", "A few hours", "");
   it("continues a paused Anthropic turn and verifies sources it searched", async () => {
@@ -272,14 +379,14 @@ describe("research provenance and continuation", () => {
     const mock = vi
       .fn()
       .mockResolvedValueOnce(
-        ok({
+        anthropicStream({
           stop_reason: "pause_turn",
           content: [
             {
               type: "server_tool_use",
               id: "s1",
               name: "web_search",
-              input: {},
+              input: { query: "tiny puzzle games" },
             },
             {
               type: "web_search_tool_result",
@@ -296,7 +403,7 @@ describe("research provenance and continuation", () => {
         }),
       )
       .mockResolvedValueOnce(
-        ok({
+        anthropicStream({
           stop_reason: "end_turn",
           content: [
             { type: "text", text: withSources.slice(0, 40) },
@@ -305,18 +412,52 @@ describe("research provenance and continuation", () => {
         }),
       );
     vi.stubGlobal("fetch", mock);
-    const result = await generateFromAPI(apiInput("anthropic"), "k");
+    const progress = vi.fn();
+    const result = await generateFromAPI(
+      apiInput("anthropic"),
+      "k",
+      undefined,
+      progress,
+    );
     expect(mock).toHaveBeenCalledTimes(2);
     const second = JSON.parse(mock.mock.calls[1][1].body);
     expect(second.messages).toHaveLength(2);
     expect(second.messages[1].role).toBe("assistant");
-    expect(second.messages[1].content[0].type).toBe("server_tool_use");
+    // The rebuilt turn is sent back exactly as the API streamed it.
+    expect(second.messages[1].content[0]).toEqual({
+      type: "server_tool_use",
+      id: "s1",
+      name: "web_search",
+      input: { query: "tiny puzzle games" },
+    });
+    expect(second.messages[1].content[1].content[0].url).toBe(
+      "https://example.com/post",
+    );
+    const events = progress.mock.calls.map(([event]) => event);
+    expect(events).toContainEqual({
+      type: "search",
+      query: "tiny puzzle games",
+    });
+    expect(events).toContainEqual({
+      type: "pages",
+      pages: [{ url: "https://example.com/post", title: "Found" }],
+    });
+    expect(
+      events
+        .filter((e) => e.type === "draft")
+        .map((e) => e.text)
+        .join(""),
+    ).toBe(withSources);
     expect(result.sources.map((s) => s.verified)).toEqual([true, false]);
   });
   it("stops after a bounded number of continuations", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(ok({ stop_reason: "pause_turn", content: [] })),
+      vi
+        .fn()
+        .mockImplementation(async () =>
+          anthropicStream({ stop_reason: "pause_turn", content: [] }),
+        ),
     );
     await expect(generateFromAPI(apiInput("anthropic"), "k")).rejects.toThrow(
       "Research did not finish",
@@ -324,13 +465,17 @@ describe("research provenance and continuation", () => {
   });
   it("uses OpenAI search sources and url citations", async () => {
     const mock = vi.fn().mockResolvedValue(
-      ok({
+      openAIStream({
         status: "completed",
         output: [
           {
             type: "web_search_call",
-            action: { sources: [{ type: "url", url: "https://a.dev/x" }] },
-          },
+            action: {
+              type: "search",
+              query: "puzzle trends",
+              sources: [{ type: "url", url: "https://a.dev/x" }],
+            },
+          } as never,
           {
             type: "message",
             content: [
@@ -348,7 +493,21 @@ describe("research provenance and continuation", () => {
       }),
     );
     vi.stubGlobal("fetch", mock);
-    const result = await generateFromAPI(apiInput("openai"), "k");
+    const progress = vi.fn();
+    const result = await generateFromAPI(
+      apiInput("openai"),
+      "k",
+      undefined,
+      progress,
+    );
+    expect(progress).toHaveBeenCalledWith({
+      type: "search",
+      query: "puzzle trends",
+    });
+    expect(progress).toHaveBeenCalledWith({
+      type: "pages",
+      pages: [{ url: "https://a.dev/x", title: "" }],
+    });
     expect(JSON.parse(mock.mock.calls[0][1].body).include).toContain(
       "web_search_call.action.sources",
     );
@@ -360,28 +519,37 @@ describe("research provenance and continuation", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(
-        ok({
-          choices: [
+        openRouterStream({
+          content: JSON.stringify(brief),
+          annotations: [
             {
-              message: {
-                content: JSON.stringify(brief),
-                annotations: [
-                  {
-                    type: "url_citation",
-                    url_citation: { url: "https://b.dev/y", title: "B" },
-                  },
-                  {
-                    type: "url_citation",
-                    url_citation: { url: "javascript:x" },
-                  },
-                ],
-              },
+              type: "url_citation",
+              url_citation: { url: "https://b.dev/y", title: "B" },
+            },
+            {
+              type: "url_citation",
+              url_citation: { url: "javascript:x" },
             },
           ],
         }),
       ),
     );
-    const result = await generateFromAPI(apiInput("openrouter"), "k");
+    const progress = vi.fn();
+    const result = await generateFromAPI(
+      apiInput("openrouter"),
+      "k",
+      undefined,
+      progress,
+    );
+    expect(progress).toHaveBeenCalledWith({
+      type: "thinking",
+      text: "Considering puzzles. ",
+    });
+    // Unsafe links never reach the progress feed.
+    expect(progress).toHaveBeenCalledWith({
+      type: "pages",
+      pages: [{ url: "https://b.dev/y", title: "B" }],
+    });
     expect(result.sources).toEqual([
       { title: "B", url: "https://b.dev/y", verified: true },
     ]);

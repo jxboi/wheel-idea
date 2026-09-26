@@ -1,52 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  categories,
-  briefSchema,
-  type Idea,
-  type Workspace,
-} from "../../lib/schema";
+import type { ProgressEvent } from "../../../shared/contract.js";
+import { requestBrief, type Credentials } from "./request";
+import { categories, type Idea, type Workspace } from "../../lib/schema";
 import { buildContext } from "../../lib/context";
 import { previewBrief } from "../../lib/preview";
 import { landingRotation, pickCategory } from "../../lib/wheel";
 import { researchStatusFor } from "../../lib/actions";
+import {
+  applyEvent,
+  ingredientsFor,
+  newActivity,
+  type Activity,
+} from "./activity";
 
-export type Credentials = { key: string; token: string };
+export type { Credentials };
 
 const spinMs = 4900;
 const reducedSpinMs = 150;
 // Slightly below the server's 120-second function limit.
 const requestTimeoutMs = 118000;
-
-async function requestBrief(
-  workspace: Workspace,
-  credentials: Credentials,
-  category: Idea["category"],
-  signal: AbortSignal,
-) {
-  const { settings, preferences } = workspace;
-  const response = await fetch("/api/generate", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(credentials.key ? { "X-Provider-Key": credentials.key } : {}),
-      ...(credentials.token ? { "X-Workspace-Token": credentials.token } : {}),
-    },
-    body: JSON.stringify({
-      category,
-      duration: preferences.duration,
-      mood: preferences.mood,
-      settings,
-      ...buildContext(workspace),
-    }),
-    signal,
-  });
-  const result = await response.json().catch(() => ({
-    error: "The server returned an unexpected response. Please try again.",
-  }));
-  if (!response.ok)
-    throw new Error(result.error || "Could not generate an idea.");
-  return briefSchema.parse(result);
-}
+const renderEveryMs = 120;
 
 /**
  * The spin lifecycle: pick a category, animate the wheel, and request a brief in
@@ -67,7 +40,8 @@ export function useGeneration({
   const [busy, setBusy] = useState(false);
   const [rotation, setRotation] = useState(315);
   const [selected, setSelected] = useState<Idea["category"] | null>(null);
-  const [status, setStatus] = useState("");
+  const [landed, setLanded] = useState(false);
+  const [activity, setActivity] = useState<Activity | null>(null);
   const [error, setError] = useState("");
   const generation = useRef<AbortController | null>(null);
   const generationId = useRef(0);
@@ -78,7 +52,7 @@ export function useGeneration({
     generationId.current++;
     generation.current?.abort();
     setBusy(false);
-    setStatus("");
+    setActivity(null);
     onCancelled();
   }, [onCancelled]);
 
@@ -90,11 +64,31 @@ export function useGeneration({
     generation.current = controller;
     setBusy(true);
     setError("");
-    setStatus(
-      settings.provider === "preview"
-        ? "Picking a sample idea…"
-        : "Researching…",
+    setLanded(false);
+    let prepared: { context: string; images: string[] };
+    try {
+      prepared = buildContext(workspace);
+    } catch (err) {
+      setBusy(false);
+      setError(
+        err instanceof Error ? err.message : "Could not prepare context.",
+      );
+      return;
+    }
+    // Progress arrives token by token; render it in small batches.
+    let current = newActivity(
+      ingredientsFor(workspace, prepared.context, prepared.images),
     );
+    let renderTimer: ReturnType<typeof setTimeout> | undefined;
+    const render = () => {
+      renderTimer = undefined;
+      if (id === generationId.current) setActivity(current);
+    };
+    const onEvent = (event: ProgressEvent) => {
+      current = applyEvent(current, event);
+      renderTimer ??= setTimeout(render, renderEveryMs);
+    };
+    setActivity(current);
     const last = preferences.avoidRepeat
       ? (selected ?? workspace.ideas[0]?.category ?? null)
       : null;
@@ -106,16 +100,25 @@ export function useGeneration({
     const animation = new Promise((resolve) =>
       setTimeout(resolve, reduced ? reducedSpinMs : spinMs),
     );
-    const statusTimer = setTimeout(() => {
-      if (generationId.current === id)
-        setStatus(`Landed on ${category}. Writing it up…`);
-    }, spinMs);
+    const landTimer = setTimeout(
+      () => {
+        if (generationId.current === id) setLanded(true);
+      },
+      reduced ? reducedSpinMs : spinMs,
+    );
     const timeout = setTimeout(() => controller.abort(), requestTimeoutMs);
     try {
       const [brief] = await Promise.all([
         settings.provider === "preview"
           ? previewBrief(category, preferences.duration, preferences.mood)
-          : requestBrief(workspace, credentials, category, controller.signal),
+          : requestBrief(
+              workspace,
+              credentials,
+              category,
+              prepared,
+              controller.signal,
+              onEvent,
+            ),
         animation,
       ]);
       if (id !== generationId.current) return;
@@ -143,14 +146,25 @@ export function useGeneration({
               : "Something went wrong. Try again.",
         );
     } finally {
-      clearTimeout(statusTimer);
+      clearTimeout(landTimer);
       clearTimeout(timeout);
+      clearTimeout(renderTimer);
       if (id === generationId.current) {
         setBusy(false);
-        setStatus("");
+        setActivity(null);
       }
     }
   };
 
-  return { busy, rotation, selected, status, error, setError, spin, cancel };
+  return {
+    busy,
+    rotation,
+    selected,
+    landed,
+    activity,
+    error,
+    setError,
+    spin,
+    cancel,
+  };
 }

@@ -1,6 +1,6 @@
 // @ts-check
 import { timingSafeEqual } from "node:crypto";
-import { requestSchema } from "../shared/contract.js";
+import { progressMediaType, requestSchema } from "../shared/contract.js";
 import { generateFromAPI } from "../server/providers.js";
 import { generateLocal, localToolsEnabled } from "../server/local.js";
 
@@ -82,20 +82,43 @@ export default async function handler(req, res) {
   res.on?.("close", () => {
     if (!res.writableEnded) disconnect.abort();
   });
+  /** @param {unknown} error */
+  const failure = (error) => {
+    const raw =
+      error instanceof Error ? error.message : "Generation failed. Try again.";
+    const message = key ? raw.replaceAll(key, "[redacted]") : raw;
+    return message.includes("abort") || message.includes("timeout")
+      ? "The model took too long. Try a lower thinking effort or another model."
+      : message;
+  };
+  // Clients that accept NDJSON get live progress, then the result or error as
+  // the last line. The status is already 200 by then, so errors travel in-band.
+  if (String(req.headers.accept ?? "").includes(progressMediaType)) {
+    res.statusCode = 200;
+    res.setHeader("Content-Type", `${progressMediaType}; charset=utf-8`);
+    res.setHeader("X-Accel-Buffering", "no");
+    /** @param {import("../shared/contract.js").ProgressEvent} event */
+    const send = (event) => {
+      if (!res.writableEnded) res.write(`${JSON.stringify(event)}\n`);
+    };
+    send({ type: "started", local });
+    try {
+      const brief = local
+        ? await generateLocal(input, disconnect.signal)
+        : await generateFromAPI(input, key, disconnect.signal, send);
+      send({ type: "result", brief });
+    } catch (error) {
+      send({ type: "error", error: failure(error) });
+    }
+    res.end();
+    return;
+  }
   try {
     const brief = local
       ? await generateLocal(input, disconnect.signal)
       : await generateFromAPI(input, key, disconnect.signal);
     return res.status(200).json(brief);
   } catch (error) {
-    const raw =
-      error instanceof Error ? error.message : "Generation failed. Try again.";
-    const message = key ? raw.replaceAll(key, "[redacted]") : raw;
-    return res.status(502).json({
-      error:
-        message.includes("abort") || message.includes("timeout")
-          ? "The model took too long. Try a lower thinking effort or another model."
-          : message,
-    });
+    return res.status(502).json({ error: failure(error) });
   }
 }

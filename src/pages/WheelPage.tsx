@@ -24,6 +24,8 @@ import {
   type Settings,
 } from "../lib/schema";
 import { categoryColors } from "../components/Icons";
+import { ActivityPanel } from "../features/generation/ActivityPanel";
+import type { Activity } from "../features/generation/activity";
 export function WheelPage({
   settings,
   preferences,
@@ -31,7 +33,8 @@ export function WheelPage({
   busy,
   rotation,
   selected,
-  status,
+  landed,
+  activity,
   error,
   onSpin,
   onSettings,
@@ -46,7 +49,8 @@ export function WheelPage({
   busy: boolean;
   rotation: number;
   selected: string | null;
-  status: string;
+  landed: boolean;
+  activity: Activity | null;
   error: string;
   onSpin: () => void;
   onSettings: () => void;
@@ -85,7 +89,7 @@ export function WheelPage({
               {busy ? (
                 <>
                   <LoaderCircle className="loading-icon" size={20} />
-                  Spinning…
+                  {landed ? "Creating your idea…" : "Spinning…"}
                 </>
               ) : (
                 <>
@@ -93,9 +97,6 @@ export function WheelPage({
                 </>
               )}
             </button>
-            <div className="spin-caption" aria-live="polite">
-              {busy ? status : ""}
-            </div>
             {busy ? (
               <button className="text-button category-edit" onClick={onCancel}>
                 Cancel
@@ -111,6 +112,16 @@ export function WheelPage({
             )}
           </div>
         </section>
+        {busy && activity && (
+          <div className="activity-slot">
+            <ActivityPanel
+              activity={activity}
+              landed={landed}
+              selected={selected}
+              settings={settings}
+            />
+          </div>
+        )}
         <section className="mood-panel">
           <h2>
             What are you in

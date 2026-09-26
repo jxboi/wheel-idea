@@ -206,7 +206,8 @@ export default function App() {
             busy={generation.busy}
             rotation={generation.rotation}
             selected={generation.selected}
-            status={generation.status}
+            landed={generation.landed}
+            activity={generation.activity}
             error={generation.error}
             onSpin={generation.spin}
             onSettings={() => navigate("settings")}

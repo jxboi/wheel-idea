@@ -3,6 +3,8 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { WheelPage } from "../src/pages/WheelPage";
 import { IdeaDetail } from "../src/components/IdeaDetail";
+import { ActivityPanel } from "../src/features/generation/ActivityPanel";
+import { applyEvent, newActivity } from "../src/features/generation/activity";
 import { previewBrief } from "../src/lib/preview";
 import {
   defaultPreferences,
@@ -31,7 +33,8 @@ function renderWheel(preferences: Preferences = defaultPreferences) {
       busy={false}
       rotation={0}
       selected={null}
-      status=""
+      landed={false}
+      activity={null}
       error=""
       onSpin={onSpin}
       onSettings={() => {}}
@@ -114,5 +117,57 @@ describe("idea detail provenance", () => {
     expect(
       screen.getByText(/claimed\.dev · Not confirmed by search/),
     ).toBeTruthy();
+  });
+});
+
+describe("activity panel", () => {
+  const base = newActivity({
+    duration: "A weekend",
+    mood: "tiny tools",
+    memory: { notes: 3, recentIdeas: 0, journal: 1, photos: 0 },
+  });
+  const panel = (activity = base, landed = true) =>
+    render(
+      <ActivityPanel
+        activity={activity}
+        landed={landed}
+        selected="Games"
+        settings={defaultSettings}
+      />,
+    );
+  it("keeps the landing a surprise until the wheel stops", () => {
+    panel(base, false);
+    expect(screen.getByText("Spinning the wheel…")).toBeTruthy();
+    expect(screen.queryByText(/Games/)).toBeNull();
+  });
+  it("shows what the user shared and what the model is doing", () => {
+    let a = applyEvent(base, { type: "started", local: false });
+    a = applyEvent(a, { type: "search", query: "cozy puzzle trends" });
+    a = applyEvent(a, {
+      type: "pages",
+      pages: [{ url: "https://www.example.com/post", title: "Post" }],
+    });
+    a = applyEvent(a, {
+      type: "draft",
+      text: '{"title":"Pocket Puzzles","summary":"Small daily',
+    });
+    panel(a);
+    expect(screen.getByText("Landed on Games")).toBeTruthy();
+    for (const chip of [
+      "A weekend",
+      "“tiny tools”",
+      "3 notes",
+      "1 journal entry",
+    ])
+      expect(screen.getByText(chip)).toBeTruthy();
+    expect(screen.getByText("“cozy puzzle trends”")).toBeTruthy();
+    const link = screen.getByRole("link", { name: "example.com" });
+    expect(link.getAttribute("rel")).toContain("noopener");
+    expect(screen.getByText("Pocket Puzzles")).toBeTruthy();
+    expect(screen.getByText("Writing your brief…")).toBeTruthy();
+  });
+  it("says so when memory is off", () => {
+    panel({ ...base, ingredients: { ...base.ingredients, memory: null } });
+    expect(screen.getByText("Memory off")).toBeTruthy();
   });
 });
