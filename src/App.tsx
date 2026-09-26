@@ -85,10 +85,7 @@ export default function App() {
     toastTimer.current = setTimeout(() => setNotice(""), 5000);
   }, []);
   const update = (change: (w: Workspace) => Workspace) => setWorkspace(change);
-  const onCancelled = useCallback(
-    () => toast("Generation cancelled."),
-    [toast],
-  );
+  const onCancelled = useCallback(() => toast("Cancelled."), [toast]);
   const generation = useGeneration({
     workspace,
     credentials,
@@ -151,7 +148,7 @@ export default function App() {
       images: [],
       shareWithAI: false,
     });
-    if (photo) toast("Add a photo to your new journal entry.");
+    if (photo) toast("Add a photo below.");
   };
   const detail = workspace.ideas.find((i) => i.id === detailId);
   if (loadError)
@@ -260,7 +257,7 @@ export default function App() {
               workspace={workspace}
               onImport={(w) => {
                 setWorkspace(w);
-                toast("Your workspace is restored.");
+                toast("Workspace restored.");
               }}
               toast={toast}
             />
@@ -276,7 +273,7 @@ export default function App() {
             toast={toast}
             onFeedback={(text) => {
               update((w) => actions.addFeedback(w, detail.id, text));
-              toast("Feedback saved to this idea and your memory.");
+              toast("Feedback saved.");
             }}
           />
         )}
@@ -288,7 +285,7 @@ export default function App() {
             onSave={(entry) => {
               update((w) => actions.saveEntry(w, entry));
               setJournalDraft(null);
-              toast("A little spark, safely kept.");
+              toast("Saved.");
             }}
           />
         )}
@@ -323,7 +320,7 @@ export default function App() {
                       : actions.deleteEntry(w, id),
                   );
                   setConfirmation(null);
-                  toast("Removed from your workspace.");
+                  toast("Deleted.");
                 }}
               >
                 Delete {confirmation.type === "idea" ? "idea" : "entry"}

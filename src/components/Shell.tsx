@@ -60,11 +60,6 @@ export function Shell({
             <Settings size={20} />
             <span>Settings</span>
           </button>
-          <p>
-            Your next thing
-            <br />
-            starts here.
-          </p>
         </div>
       </aside>
       <div className="main-wrap">

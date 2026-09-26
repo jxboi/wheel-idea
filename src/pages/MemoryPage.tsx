@@ -31,24 +31,11 @@ export function MemoryPage({
   return (
     <>
       <div className="page-intro">
-        <h1>A little more you, every time.</h1>
-        <p>Your taste is the compass. Chance just opens a few doors.</p>
+        <h1>Memory</h1>
+        <p>What Orbit knows about your taste. Edit or forget anytime.</p>
       </div>
       <div className="memory-layout">
         <section>
-          <div className="memory-intro">
-            <div className="memory-leaf">
-              <Leaf size={30} strokeWidth={1.3} />
-            </div>
-            <div>
-              <h2>A copilot that gets to know you.</h2>
-              <p>
-                Preferences, feedback, and the journal entries you choose to
-                share give each spin a little more direction. You can edit or
-                forget anything.
-              </p>
-            </div>
-          </div>
           <form
             className="memory-add"
             onSubmit={(e) => {
@@ -65,7 +52,7 @@ export function MemoryPage({
               value={text}
               onChange={(e) => setText(e.target.value)}
               maxLength={2000}
-              placeholder="I like playful tools with a practical purpose. I usually build with React, and I’d rather avoid social feeds."
+              placeholder="e.g. I build with React and avoid social feeds."
               rows={3}
             />
             <button className="button primary" disabled={!text.trim()}>
@@ -151,14 +138,12 @@ export function MemoryPage({
                 </article>
               ))
             ) : (
-              <p className="empty-note">
-                A blank page, for now. Tell Orbit a little about your taste.
-              </p>
+              <p className="empty-note">Nothing saved yet.</p>
             )}
           </div>
         </section>
         <aside className="memory-settings">
-          <h3>You’re in control.</h3>
+          <h3>Privacy</h3>
           <label className="toggle-row">
             <span>Use memory in my spins</span>
             <input
@@ -170,38 +155,35 @@ export function MemoryPage({
           </label>
           <p className="small muted">
             {workspace.settings.useMemory
-              ? "Your relevant notes are included with AI requests."
-              : "Personal context and photos stay out of AI requests. Your notes are still saved."}
+              ? "Relevant notes are sent with AI requests."
+              : "Nothing personal is sent. Notes stay saved."}
           </p>
           <div className="memory-sources">
-            <h4>What shapes your ideas</h4>
+            <h4>Shaping your ideas</h4>
             <p>
               <Leaf size={17} />
-              <span>Your preferences</span>
+              <span>Notes</span>
               <b>{workspace.memories.length}</b>
             </p>
             <p>
               <Heart size={17} />
-              <span>Idea reactions</span>
+              <span>Reactions</span>
               <b>{reactions}</b>
             </p>
             <p>
               <MessageSquare size={17} />
-              <span>Feedback notes</span>
+              <span>Feedback</span>
               <b>
                 {workspace.ideas.reduce((n, i) => n + i.feedback.length, 0)}
               </b>
             </p>
             <p>
               <BookOpen size={17} />
-              <span>Shared journal entries</span>
+              <span>Shared entries</span>
               <b>{shared}</b>
             </p>
           </div>
-          <p className="small muted">
-            Stored on this device. Nothing is sent to a model until you spin
-            with a connected provider. Offline preview doesn’t use memory.
-          </p>
+          <p className="small muted">Stored only on this device.</p>
         </aside>
       </div>
     </>

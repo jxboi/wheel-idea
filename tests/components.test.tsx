@@ -65,8 +65,8 @@ describe("wheel page", () => {
       ...defaultPreferences,
       enabled: ["Games"],
     });
-    expect(screen.getByText(/1 possibilities/)).toBeTruthy();
-    fireEvent.click(screen.getByText(/Make it your wheel/));
+    expect(screen.getByText(/1 of 8 categories/)).toBeTruthy();
+    fireEvent.click(screen.getByText(/1 of 8 categories/));
     fireEvent.click(screen.getByRole("button", { name: "Games" }));
     expect(onPreferences).toHaveBeenLastCalledWith({
       ...defaultPreferences,

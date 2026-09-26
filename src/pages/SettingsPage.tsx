@@ -59,8 +59,7 @@ export function SettingsPage({
   return (
     <>
       <div className="page-intro">
-        <h1>A workspace that works for you.</h1>
-        <p>Your tools, your models, your way of making things.</p>
+        <h1>Settings</h1>
       </div>
       <div className="settings-layout">
         <form
@@ -69,16 +68,13 @@ export function SettingsPage({
             e.preventDefault();
             onSave(draft);
             onCredentials(secrets);
-            toast("Your copilot settings are saved.");
+            toast("Settings saved.");
           }}
         >
           <div className="section-heading">
-            <h2>Your creative copilot</h2>
+            <h2>AI model</h2>
             <Brain size={23} />
           </div>
-          <p className="muted">
-            Bring the model you love. Orbit gives it a little direction.
-          </p>
           <label htmlFor="provider">AI provider</label>
           <select
             id="provider"
@@ -96,12 +92,8 @@ export function SettingsPage({
             <div className="setting-notice">
               <FlaskConical size={23} />
               <div>
-                <strong>A little test drive.</strong>
-                <p>
-                  Offline preview uses eight curated example briefs. No AI call,
-                  web research, or personal context. Choose a provider for the
-                  full experience.
-                </p>
+                <strong>Sample ideas only.</strong>
+                <p>No AI, research, or personal context.</p>
               </div>
             </div>
           ) : (
@@ -123,10 +115,6 @@ export function SettingsPage({
                 }
                 onChange={(e) => setDraft({ ...draft, model: e.target.value })}
               />
-              <p className="field-hint">
-                Enter any model ID supported by your provider. Search, images,
-                and thinking support vary by model.
-              </p>
               <label htmlFor="effort">Thinking effort</label>
               <select
                 id="effort"
@@ -138,29 +126,21 @@ export function SettingsPage({
                   })
                 }
               >
-                <option value="default">Model default — recommended</option>
-                <option value="low">Low — a quick spark</option>
-                <option value="medium">
-                  Medium — a little more considered
-                </option>
-                <option value="high">High — room to think deeply</option>
+                <option value="default">Default</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
               </select>
-              <p className="field-hint">
-                Higher effort may take longer and cost more. Choose default for
-                models without reasoning controls.
-              </p>
               {local ? (
                 <div className="setting-notice">
                   <Terminal size={23} />
                   <div>
-                    <strong>Powered by your local tools.</strong>
+                    <strong>Local only.</strong>
                     <p>
-                      Run Orbit locally, enable{" "}
-                      <code>ORBIT_ENABLE_LOCAL_CLI=true</code>, and sign in to
-                      your installed{" "}
+                      Set <code>ORBIT_ENABLE_LOCAL_CLI=true</code> and sign in
+                      to the{" "}
                       {draft.provider === "codex-local" ? "Codex" : "Claude"}{" "}
-                      CLI. Local tools use text inspiration only and aren’t
-                      available on Vercel.
+                      CLI. Not available on Vercel.
                     </p>
                   </div>
                 </div>
@@ -192,13 +172,11 @@ export function SettingsPage({
                     </button>
                   </div>
                   <p className="field-hint">
-                    Kept in memory for this tab. Sent only to Orbit’s server and
-                    your selected provider; never saved with your journal or
-                    backups. Leave empty to use a configured server key.
+                    Never saved. Leave empty to use a server key.
                   </p>
                   <label htmlFor="workspace-token">
                     Workspace password{" "}
-                    <span className="optional">for a server key on Vercel</span>
+                    <span className="optional">optional</span>
                   </label>
                   <input
                     id="workspace-token"
@@ -208,16 +186,13 @@ export function SettingsPage({
                     onChange={(e) =>
                       setSecrets({ ...secrets, token: e.target.value })
                     }
-                    placeholder="Only if your deployment uses a shared key"
+                    placeholder="For a shared server key"
                   />
                 </>
               )}
               <div className="research-note">
                 <Globe size={18} />
-                <span>
-                  Live web research is requested with every connected spin.
-                  Provider and search charges apply.
-                </span>
+                <span>Each spin uses web search. Provider charges apply.</span>
               </div>
             </>
           )}
@@ -229,22 +204,11 @@ export function SettingsPage({
         <aside className="settings-side">
           <section>
             <ShieldCheck size={26} strokeWidth={1.5} />
-            <h2>Your ideas belong to you.</h2>
-            <p>
-              Ideas, journal entries, photos, and memory live in this browser on
-              this device. They aren’t synced to an account.
-            </p>
-            <p>
-              Your chosen context is sent to your AI provider when you spin. You
-              can turn this off in Memory.
-            </p>
+            <h2>Your data stays here.</h2>
+            <p>Everything lives in this browser. Nothing is synced.</p>
           </section>
           <section>
-            <h3>Keep a copy.</h3>
-            <p>
-              Back up your workspace before clearing browser data or moving to
-              another device.
-            </p>
+            <h3>Backup</h3>
             <button
               className="button secondary full-width"
               onClick={() =>
@@ -256,7 +220,7 @@ export function SettingsPage({
               }
             >
               <Download size={17} />
-              Export workspace
+              Export
             </button>
             <input
               type="file"
@@ -291,15 +255,14 @@ export function SettingsPage({
               onClick={() => input.current?.click()}
             >
               <Upload size={17} />
-              Import workspace
+              Import
             </button>
             {pending && (
               <div className="import-confirm" role="alert">
                 <p>
-                  Replace this workspace with {pending.ideas.length} ideas,{" "}
-                  {pending.entries.length} journal entries, and{" "}
-                  {pending.memories.length} memories? Export a copy first if you
-                  want to keep your current work.
+                  Replace everything with {pending.ideas.length} ideas,{" "}
+                  {pending.entries.length} entries, and{" "}
+                  {pending.memories.length} memories?
                 </p>
                 <div className="button-row">
                   <button
@@ -318,7 +281,7 @@ export function SettingsPage({
                       setSecrets({ key: "", token: "" });
                     }}
                   >
-                    Replace workspace
+                    Replace
                   </button>
                 </div>
               </div>

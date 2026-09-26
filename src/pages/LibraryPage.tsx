@@ -1,12 +1,5 @@
 import { useMemo, useState } from "react";
-import {
-  Search,
-  ArrowUpRight,
-  Bookmark,
-  Trash2,
-  ArrowRight,
-  BookOpen,
-} from "lucide-react";
+import { Search, Bookmark, Trash2, ArrowRight, BookOpen } from "lucide-react";
 import { categories, type Idea } from "../lib/schema";
 import { categoryColors, categoryIcons } from "../components/Icons";
 export function LibraryPage({
@@ -41,8 +34,7 @@ export function LibraryPage({
     <>
       <div className="page-intro page-heading-row">
         <div>
-          <h1>Good ideas have a home.</h1>
-          <p>A collection of possibilities. One could be your next thing.</p>
+          <h1>Your ideas</h1>
         </div>
         <button className="button primary" onClick={onSpin}>
           Find an idea <ArrowRight size={17} />
@@ -70,7 +62,7 @@ export function LibraryPage({
               aria-label="Search ideas"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Find a possibility…"
+              placeholder="Search"
             />
           </label>
           <select
@@ -119,9 +111,6 @@ export function LibraryPage({
                   </span>
                   <h2>{idea.title}</h2>
                   <p>{idea.summary}</p>
-                  <span className="text-button">
-                    Explore this idea <ArrowUpRight size={17} />
-                  </span>
                 </button>
                 <div className="idea-card-footer">
                   <time>
@@ -147,16 +136,7 @@ export function LibraryPage({
           <div className="empty-symbol">
             <BookOpen size={38} strokeWidth={1.2} />
           </div>
-          <h2>
-            {ideas.length
-              ? "No ideas in this little corner."
-              : "Your next chapter is unwritten."}
-          </h2>
-          <p>
-            {ideas.length
-              ? "Try another search or save an idea you love."
-              : "Give the wheel a spin. Every idea will land here, ready when you are."}
-          </p>
+          <h2>{ideas.length ? "No matches." : "No ideas yet."}</h2>
           <button
             className="button primary"
             onClick={
@@ -169,7 +149,7 @@ export function LibraryPage({
                 : onSpin
             }
           >
-            {ideas.length ? "Clear filters" : "Let’s find your first idea"}
+            {ideas.length ? "Clear filters" : "Spin the wheel"}
             <ArrowRight size={17} />
           </button>
         </div>
