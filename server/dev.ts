@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 import { loadEnv, createServer as createViteServer } from "vite";
-import handler from "../api/generate";
+import handler from "../api/generate.js";
 import type { ApiRequest, ApiResponse } from "./http";
 Object.assign(process.env, loadEnv("development", process.cwd(), ""));
 const vite = await createViteServer({

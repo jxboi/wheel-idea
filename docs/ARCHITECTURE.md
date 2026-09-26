@@ -13,7 +13,7 @@
 - `server/prompt.ts`: provider-independent brief instruction and contextual input.
 - `server/providers.ts`: outbound API adapters and defensive result parsing. Never import into browser code.
 - `server/local.ts`: optional developer-local CLI adapters. Vercel explicitly refuses them.
-- `api/generate.ts`: HTTP boundary, validation, origin checks, credential routing, and workspace-token guard.
+- `api/generate.js`: HTTP boundary, validation, origin checks, credential routing, and workspace-token guard. It imports an explicit JavaScript runtime module so Vercel packages the serverless dependency graph correctly.
 - `server/dev.ts`: loopback-only Vite middleware server with the same API handler and a request body limit.
 
 ## Data flow

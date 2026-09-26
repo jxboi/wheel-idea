@@ -9,7 +9,7 @@ import {
 } from "../src/lib/schema";
 import { previewBrief } from "../src/lib/preview";
 import { parseBrief, generateFromAPI } from "../server/providers";
-import handler from "../api/generate";
+import handler from "../api/generate.js";
 
 describe("wheel geometry", () => {
   it("lands every sector at the pointer after repeated spins", () => {

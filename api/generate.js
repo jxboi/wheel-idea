@@ -1,16 +1,20 @@
-import type { ApiRequest, ApiResponse } from "../server/http";
 import { timingSafeEqual } from "node:crypto";
-import { requestSchema } from "../src/lib/schema";
-import { generateFromAPI } from "../server/providers";
-import { generateLocal } from "../server/local";
+import {
+  generateFromAPI,
+  generateLocal,
+  requestSchema,
+} from "../server/runtime.js";
+
 export const config = { maxDuration: 120 };
-function equal(a: string, b: string) {
+
+function equal(left, right) {
   return (
-    Buffer.byteLength(a) === Buffer.byteLength(b) &&
-    timingSafeEqual(Buffer.from(a), Buffer.from(b))
+    Buffer.byteLength(left) === Buffer.byteLength(right) &&
+    timingSafeEqual(Buffer.from(left), Buffer.from(right))
   );
 }
-export default async function handler(req: ApiRequest, res: ApiResponse) {
+
+export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   if (req.method !== "POST")
     return res.status(405).json({ error: "Use POST to generate an idea." });
@@ -35,7 +39,6 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     return res
       .status(400)
       .json({ error: "Preview ideas are generated on your device." });
-  const token = String(req.headers["x-workspace-token"] ?? "");
   const local = input.settings.provider.endsWith("-local");
   if (
     local &&
@@ -48,20 +51,21 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   const suppliedKey = String(req.headers["x-provider-key"] ?? "");
   if (suppliedKey.length > 512)
     return res.status(400).json({ error: "Invalid API key." });
-  const envName = {
+  const environmentKey = {
     openrouter: "OPENROUTER_API_KEY",
     openai: "OPENAI_API_KEY",
     anthropic: "ANTHROPIC_API_KEY",
-  }[input.settings.provider as "openai" | "openrouter" | "anthropic"];
-  const key = suppliedKey || (envName ? process.env[envName] : "") || "";
+  }[input.settings.provider];
+  const key =
+    suppliedKey || (environmentKey ? process.env[environmentKey] : "") || "";
   if (!local && !key)
     return res
       .status(401)
       .json({ error: "Connect an API key in Settings, then spin again." });
-  // Never expose a server-funded public endpoint: deployed keys require a workspace token.
   if (!suppliedKey && !local && process.env.VERCEL) {
     const expected = process.env.ORBIT_ACCESS_TOKEN;
-    if (!expected || !equal(token, expected))
+    const received = String(req.headers["x-workspace-token"] ?? "");
+    if (!expected || !equal(received, expected))
       return res.status(401).json({
         error:
           "Enter the workspace password in Settings to use the server’s API key.",
