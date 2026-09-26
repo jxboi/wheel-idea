@@ -38,13 +38,13 @@ export function IdeaDetail({
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(idea.prompt);
-      toast("Build prompt copied. Go make something.");
+      toast("Prompt copied.");
     } catch {
       toast("Clipboard unavailable. Use Download instead.");
     }
   };
   return (
-    <Modal title="Your next possibility" onClose={onClose} wide>
+    <Modal title="Idea" onClose={onClose} wide>
       <div className="idea-detail">
         <div className="detail-meta">
           <span
@@ -71,11 +71,11 @@ export function IdeaDetail({
             onClick={() => onUpdate({ ...idea, saved: !idea.saved })}
           >
             {idea.saved ? <Check size={17} /> : <Bookmark size={17} />}{" "}
-            {idea.saved ? "Saved to library" : "Save idea"}
+            {idea.saved ? "Saved" : "Save"}
           </button>
           <button className="button secondary" onClick={copy}>
             <Copy size={17} />
-            Copy build prompt
+            Copy prompt
           </button>
           <button
             className="icon-button outlined"
@@ -124,15 +124,11 @@ export function IdeaDetail({
               </div>
               <p>{idea.whyNow}</p>
               {idea.researchStatus === "uncited" && (
-                <p className="inline-note">
-                  The model returned no source links. Treat this idea as
-                  unverified research.
-                </p>
+                <p className="inline-note">No sources returned. Unverified.</p>
               )}
               {idea.researchStatus === "unverified" && (
                 <p className="inline-note">
-                  None of the listed sources could be matched to pages the
-                  model’s search actually returned. Treat them as unverified.
+                  Sources couldn’t be confirmed by search. Unverified.
                 </p>
               )}
               <h3>The first version</h3>
@@ -146,7 +142,7 @@ export function IdeaDetail({
               </ol>
               {idea.sources.length > 0 && (
                 <>
-                  <h3>From the research</h3>
+                  <h3>Sources</h3>
                   <div className="source-list">
                     {idea.sources.map((s, i) => (
                       <a
@@ -170,14 +166,13 @@ export function IdeaDetail({
                     ))}
                   </div>
                   <p className="small muted">
-                    “Found by search” means the link matches a page your
-                    provider’s search tool returned. It does not confirm what
-                    the page says, so verify important claims before building.
+                    “Found by search” means the page exists, not that its claims
+                    are true.
                   </p>
                 </>
               )}
               <div className="reaction-row">
-                <span>Is this your kind of thing?</span>
+                <span>Your take?</span>
                 <button
                   className={`reaction ${idea.rating === "love" ? "selected" : ""}`}
                   aria-pressed={idea.rating === "love"}
@@ -209,9 +204,7 @@ export function IdeaDetail({
           ) : tab === "prompt" ? (
             <>
               <div className="section-heading">
-                <span className="small muted">
-                  Ready for your favorite coding agent.
-                </span>
+                <span className="small muted">For your coding agent.</span>
                 <button
                   className="text-button"
                   onClick={() => {
@@ -255,11 +248,7 @@ export function IdeaDetail({
             </>
           ) : (
             <>
-              <h3>A little feedback goes a long way.</h3>
-              <p className="muted">
-                What fits? What would you change? Your notes help shape future
-                spins when memory is on.
-              </p>
+              <p className="muted">What would you change?</p>
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -274,7 +263,7 @@ export function IdeaDetail({
                 </label>
                 <textarea
                   id="feedback"
-                  placeholder="I love the concept, but I’d prefer something without a social feed…"
+                  placeholder="e.g. Love it, but without a social feed."
                   maxLength={2000}
                   value={feedback}
                   onChange={(e) => setFeedback(e.target.value)}
@@ -302,9 +291,7 @@ export function IdeaDetail({
                     </article>
                   ))
                 ) : (
-                  <p className="empty-note">
-                    No feedback yet. Your perspective belongs here.
-                  </p>
+                  <p className="empty-note">No feedback yet.</p>
                 )}
               </div>
             </>

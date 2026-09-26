@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 import {
   Plus,
   ImagePlus,
-  ArrowUpRight,
   Trash2,
   NotebookPen,
   X,
@@ -27,25 +26,20 @@ export function JournalPage({
     <>
       <div className="page-intro page-heading-row">
         <div>
-          <h1>Follow the little sparks.</h1>
-          <p>
-            Half-formed thoughts, everyday discoveries, and things worth
-            keeping.
-          </p>
+          <h1>Journal</h1>
         </div>
         <button className="button primary" onClick={onNew}>
           <Plus size={17} />
           New entry
         </button>
       </div>
-      <div className="journal-topline">
-        <span>
-          {entries.length
-            ? `${entries.length} ${entries.length === 1 ? "entry" : "entries"}, and room for more.`
-            : "A notebook with no rules."}
-        </span>
-        <span>Saved on this device</span>
-      </div>
+      {entries.length > 0 && (
+        <div className="journal-topline">
+          <span>
+            {entries.length} {entries.length === 1 ? "entry" : "entries"}
+          </span>
+        </div>
+      )}
       {entries.length ? (
         <div className="journal-grid">
           {entries.map((entry, i) => (
@@ -72,18 +66,11 @@ export function JournalPage({
                     year: "numeric",
                   })}
                 </time>
-                <h2>{entry.title || "An untitled spark"}</h2>
-                <p>{entry.body || "A little visual inspiration."}</p>
-                <span className="text-button">
-                  Keep the thought going <ArrowUpRight size={15} />
-                </span>
+                <h2>{entry.title || "Untitled"}</h2>
+                {entry.body && <p>{entry.body}</p>}
               </button>
               <div className="journal-card-footer">
-                <span>
-                  {entry.shareWithAI
-                    ? "Shared with your copilot"
-                    : "Just for you"}
-                </span>
+                <span>{entry.shareWithAI ? "Shared with AI" : "Private"}</span>
                 <button
                   className="icon-button"
                   aria-label={`Delete ${entry.title || "entry"}`}
@@ -99,22 +86,9 @@ export function JournalPage({
         <div className="journal-empty">
           <div className="notebook-art" aria-hidden="true">
             <NotebookPen size={58} strokeWidth={1} />
-            <span>
-              everything starts
-              <br />
-              with a little thought.
-            </span>
           </div>
-          <h2>It doesn’t have to be an idea yet.</h2>
-          <p>
-            A screenshot. An observation. A “what if.”
-            <br />
-            Give it a little space to grow.
-          </p>
-          <button className="button primary" onClick={onNew}>
-            <Plus size={17} />
-            Capture your first spark
-          </button>
+          <h2>Nothing here yet.</h2>
+          <p>Notes, screenshots, “what ifs.”</p>
         </div>
       )}
     </>
@@ -168,13 +142,13 @@ export function JournalEditor({
   };
   return (
     <Modal
-      title={entry.title ? "A page in your journal" : "A fresh page"}
+      title={entry.title ? "Edit entry" : "New entry"}
       onClose={requestClose}
       wide
     >
       {discarding && (
         <div className="error-banner" role="alert">
-          <span>This entry has unsaved changes.</span>
+          <span>Discard unsaved changes?</span>
           <div className="button-row">
             <button
               className="text-button"
@@ -212,7 +186,7 @@ export function JournalEditor({
           className="journal-title-input"
           aria-label="Entry title"
           maxLength={160}
-          placeholder="What’s on your mind?"
+          placeholder="Title"
           value={draft.title}
           onChange={(e) => setDraft({ ...draft, title: e.target.value })}
         />
@@ -220,7 +194,7 @@ export function JournalEditor({
           className="journal-body-input"
           aria-label="Journal entry"
           maxLength={10000}
-          placeholder="An idea you can’t shake. Something you noticed. A thing you wish existed…"
+          placeholder="What’s on your mind?"
           value={draft.body}
           onChange={(e) => setDraft({ ...draft, body: e.target.value })}
         />
@@ -269,10 +243,8 @@ export function JournalEditor({
             <ImagePlus size={23} />
           )}
           <span>
-            {uploading
-              ? "Making room for your inspiration…"
-              : "Add a photo or drop one here"}
-            <small>JPG, PNG, WebP · Up to 4 images · 10 MB each</small>
+            {uploading ? "Adding…" : "Add a photo"}
+            <small>Up to 4 · 10 MB each</small>
           </span>
           <Plus size={18} />
         </button>
@@ -285,17 +257,11 @@ export function JournalEditor({
             }
           />
           <span>
-            Let this inspire future spins
-            <small>
-              Share this entry and its photos with your AI provider when memory
-              is on.
-            </small>
+            Use in future spins
+            <small>Shared with your AI provider when memory is on.</small>
           </span>
         </label>
         <div className="editor-footer">
-          <span className="small muted">
-            Saved locally when you save this entry.
-          </span>
           <button
             className="button primary"
             disabled={

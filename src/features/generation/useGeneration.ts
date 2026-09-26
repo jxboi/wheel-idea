@@ -92,8 +92,8 @@ export function useGeneration({
     setError("");
     setStatus(
       settings.provider === "preview"
-        ? "A little chance is at work…"
-        : "Researching a fresh direction…",
+        ? "Picking a sample idea…"
+        : "Researching…",
     );
     const last = preferences.avoidRepeat
       ? (selected ?? workspace.ideas[0]?.category ?? null)
@@ -108,7 +108,7 @@ export function useGeneration({
     );
     const statusTimer = setTimeout(() => {
       if (generationId.current === id)
-        setStatus(`Landed on ${category}. Shaping your build prompt…`);
+        setStatus(`Landed on ${category}. Writing it up…`);
     }, spinMs);
     const timeout = setTimeout(() => controller.abort(), requestTimeoutMs);
     try {

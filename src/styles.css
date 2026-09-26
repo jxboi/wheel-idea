@@ -507,8 +507,12 @@ main:focus {
   margin-top: 10px;
   min-height: 17px;
 }
+.spin-caption:empty {
+  min-height: 0;
+  margin-top: 0;
+}
 .category-edit {
-  font-size: 10px;
+  font-size: 12px;
   color: #80848c;
   font-weight: 400;
   gap: 6px;
@@ -519,21 +523,6 @@ main:focus {
   border: 1px solid #d9d5cb;
   background: #fcfbf8b3;
   border-radius: 14px;
-}
-.panel-kicker {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-transform: uppercase;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 1.8px;
-  margin-bottom: 17px;
-}
-.panel-kicker svg {
-  color: #b9955f;
-  fill: #b9955f;
-  stroke-width: 0.6;
 }
 .mood-panel h2 {
   font-size: 29px;
@@ -601,8 +590,7 @@ main:focus {
 }
 .copilot {
   border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 23px 0 21px;
+  padding: 23px 0 0;
   margin-top: 23px;
 }
 .copilot label {
@@ -634,18 +622,6 @@ main:focus {
   line-height: 1.5;
   margin: 7px 0 0;
   overflow-wrap: anywhere;
-}
-.memory-note {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  padding-top: 21px;
-}
-.memory-note p {
-  font-size: 11px;
-  color: var(--muted);
-  line-height: 1.6;
-  margin: 0;
 }
 .preview-note {
   font-size: 10px;
@@ -1235,9 +1211,6 @@ main:focus {
   font-size: 12px;
   color: var(--muted);
 }
-.journal-topline > span:last-child {
-  font-size: 10px;
-}
 .journal-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1353,12 +1326,6 @@ main:focus {
   bottom: 0;
   width: 1px;
   background: #d6cbb4;
-}
-.notebook-art span {
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 14px;
-  line-height: 1.5;
 }
 .journal-empty > h2 {
   margin-bottom: 12px;
@@ -1485,31 +1452,6 @@ main:focus {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
   gap: 50px;
-}
-.memory-intro {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
-  margin-bottom: 32px;
-}
-.memory-leaf {
-  width: 62px;
-  height: 62px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: #e3eadb;
-  color: #627252;
-  flex-shrink: 0;
-}
-.memory-intro h2 {
-  font-size: 24px;
-  margin-bottom: 12px;
-}
-.memory-intro p {
-  font-size: 13px;
-  color: var(--muted);
-  max-width: 560px;
 }
 .memory-add label {
   font-size: 13px;
@@ -1844,12 +1786,9 @@ main:focus {
     min-height: 46px;
   }
   .copilot {
-    padding: 25px 0;
+    padding: 25px 0 0;
   }
   .copilot p,
-  .memory-note p {
-    font-size: 12px;
-  }
   .spin-button {
     height: 52px;
     font-size: 22px;
@@ -1919,11 +1858,8 @@ main:focus {
     margin-bottom: 21px;
   }
   .copilot {
-    padding: 20px 0;
+    padding: 20px 0 0;
     margin-top: 22px;
-  }
-  .memory-note {
-    padding-top: 19px;
   }
   .spark-options > button {
     padding: 18px 15px;
@@ -1949,12 +1885,6 @@ main:focus {
   .memory-layout {
     gap: 30px;
     grid-template-columns: minmax(0, 1fr) 270px;
-  }
-  .memory-intro {
-    gap: 14px;
-  }
-  .memory-intro h2 {
-    font-size: 23px;
   }
   .settings-layout {
     gap: 35px;
@@ -2019,9 +1949,6 @@ main:focus {
     font-size: 10px;
     min-height: 57px;
   }
-  .memory-note p {
-    font-size: 10px;
-  }
   .copilot label {
     font-size: 14px;
   }
@@ -2076,9 +2003,9 @@ main:focus {
     padding: 0 22px 100px;
   }
   .workspace-bar {
-    height: 72px;
+    height: 60px;
     border-bottom: 1px solid #e4e1d9;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
   .workspace-label {
     display: none;
@@ -2097,9 +2024,7 @@ main:focus {
     height: 34px;
   }
   .workspace-control {
-    font-size: 10px;
-    gap: 7px;
-    padding: 4px 0;
+    display: none;
   }
   .workspace-control svg {
     width: 14px;
@@ -2127,9 +2052,9 @@ main:focus {
     align-items: center;
     justify-content: center;
     gap: 5px;
-    font-size: 9px;
+    font-size: 11px;
     color: #7b8290;
-    min-width: 55px;
+    min-width: 58px;
     min-height: 47px;
     border-radius: 8px;
   }
@@ -2138,7 +2063,7 @@ main:focus {
     background: #e7edf4;
   }
   .page-intro {
-    margin: 0 0 30px;
+    margin: 0 0 22px;
   }
   .page-intro h1 {
     font-size: 34px;
@@ -2151,12 +2076,15 @@ main:focus {
     margin-top: 13px;
   }
   .wheel-intro {
-    margin: 0 auto 29px;
+    margin: 0 auto 18px;
     max-width: 500px;
+  }
+  .wheel-intro p {
+    display: none;
   }
   .wheel-intro h1 {
     white-space: normal;
-    font-size: 36px;
+    font-size: 30px;
     max-width: 390px;
     line-height: 1.2;
     letter-spacing: -1.25px;
@@ -2193,40 +2121,39 @@ main:focus {
   }
   .spin-button {
     height: 52px;
-    font-size: 21px;
+    font-size: 20px;
   }
   .spin-caption {
-    font-size: 10px;
-    margin-top: 11px;
+    font-size: 13px;
+    margin-top: 8px;
+    min-height: 0;
+  }
+  .spin-caption:empty {
+    margin-top: 0;
   }
   .category-edit {
-    font-size: 10px;
-    min-height: 35px;
+    font-size: 13px;
+    min-height: 40px;
   }
   .mood-panel {
     width: 100%;
     padding: 24px;
     border-radius: 13px;
   }
-  .panel-kicker {
-    font-size: 9px;
-    margin-bottom: 16px;
-  }
   .mood-panel h2 {
     font-size: 28px;
     max-width: 300px;
     line-height: 1.25;
   }
-  .mood-panel > .muted {
-    font-size: 12px;
-    margin-top: 9px;
+  .mood-panel h2 {
+    font-size: 24px;
   }
   .mood-input textarea {
-    font-size: 12px;
-    height: 92px;
+    font-size: 16px;
+    height: 72px;
   }
   .time-options button {
-    font-size: 11px;
+    font-size: 12px;
     min-height: 44px;
     padding: 7px 5px;
     gap: 6px;
@@ -2235,10 +2162,8 @@ main:focus {
     width: 16px;
   }
   .copilot p {
-    font-size: 11px;
-  }
-  .memory-note p {
-    font-size: 11px;
+    font-size: 12px;
+    overflow-wrap: anywhere;
   }
   .spark-section {
     max-width: 500px;
@@ -2246,48 +2171,48 @@ main:focus {
     padding-top: 24px;
   }
   .spark-section h2 {
-    font-size: 25px;
+    font-size: 22px;
   }
   .spark-section .text-button {
-    font-size: 11px;
+    font-size: 13px;
   }
   .spark-options {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
   }
   .spark-options > button {
-    min-height: 68px;
-    padding: 16px 20px;
-    font-size: 13px;
-    gap: 18px;
+    min-height: 84px;
+    padding: 14px 6px;
+    font-size: 12px;
+    gap: 8px;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+  }
+  .spark-options > button > svg:first-child {
+    width: 24px;
+    height: 24px;
   }
   .spark-arrow {
-    display: block;
-    opacity: 0.7;
+    display: none;
   }
   .preview-note {
     max-width: 430px;
-    margin: 20px auto 0;
-    font-size: 10px;
-    flex-wrap: wrap;
-    gap: 5px 7px;
-  }
-  .preview-note > span:last-child {
-    flex-basis: 100%;
-    text-align: center;
-    font-size: 9px;
+    margin: 18px auto 0;
+    font-size: 12px;
   }
   .page-heading-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 20px;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
   }
   .page-heading-row h1 {
-    font-size: 34px;
+    font-size: 30px;
   }
   .page-heading-row > .button {
-    font-size: 12px;
+    font-size: 13px;
     min-height: 42px;
+    flex-shrink: 0;
   }
   .library-toolbar {
     display: block;
@@ -2347,9 +2272,6 @@ main:focus {
     font-size: 11px;
     gap: 15px;
   }
-  .journal-topline > span:last-child {
-    font-size: 9px;
-  }
   .journal-empty {
     padding: 25px 0;
   }
@@ -2366,22 +2288,6 @@ main:focus {
   .memory-layout {
     grid-template-columns: 1fr;
     gap: 30px;
-  }
-  .memory-intro {
-    gap: 15px;
-  }
-  .memory-leaf {
-    width: 48px;
-    height: 48px;
-  }
-  .memory-leaf > svg {
-    width: 25px;
-  }
-  .memory-intro h2 {
-    font-size: 23px;
-  }
-  .memory-intro p {
-    font-size: 12px;
   }
   .memory-settings {
     order: 2;
@@ -2443,7 +2349,7 @@ main:focus {
     font-size: 13px;
   }
   .detail-meta {
-    font-size: 10px;
+    font-size: 11px;
     gap: 7px;
   }
   .detail-actions {
@@ -2491,7 +2397,7 @@ main:focus {
     font-size: 11px;
   }
   .upload-zone small {
-    font-size: 9px;
+    font-size: 11px;
   }
   .attachment-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -2500,14 +2406,14 @@ main:focus {
     font-size: 11px;
   }
   .check-row small {
-    font-size: 9px;
+    font-size: 11px;
   }
   .editor-footer {
     align-items: flex-end;
     gap: 10px;
   }
   .editor-footer > span {
-    font-size: 9px;
+    font-size: 11px;
     max-width: 120px;
     line-height: 1.7;
   }
@@ -2543,6 +2449,15 @@ main:focus {
   .startup-state h1 {
     font-size: 30px;
   }
+  /* 16px keeps iOS Safari from zooming in on focus. */
+  :is(.main-wrap, .modal)
+    :is(
+      input:not([type="checkbox"]):not(.journal-title-input),
+      textarea,
+      select
+    ) {
+    font-size: 16px;
+  }
 }
 @media (max-width: 480px) {
   .idea-grid,
@@ -2556,19 +2471,19 @@ main:focus {
     height: 215px;
   }
   .mood-panel h2 {
-    font-size: 26px;
+    font-size: 24px;
   }
   .time-options button {
-    font-size: 10px;
+    font-size: 12px;
   }
   .wheel-label {
     font-size: 16px;
   }
   .wheel-intro h1 {
-    font-size: 35px;
+    font-size: 30px;
   }
   .detail-actions .button {
-    font-size: 10px;
+    font-size: 12px;
     padding: 8px 10px;
     gap: 6px;
   }
@@ -2582,10 +2497,10 @@ main:focus {
     width: 15px;
   }
   .detail-meta {
-    font-size: 9px;
+    font-size: 11px;
   }
   .page-intro h1 {
-    font-size: 33px;
+    font-size: 30px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -4,13 +4,11 @@ import {
   Plus,
   ImagePlus,
   Leaf,
-  Sparkles,
   Clock,
   CalendarDays,
   Rocket,
   Brain,
   ChevronDown,
-  BookOpen,
   LoaderCircle,
   SlidersHorizontal,
   Check,
@@ -86,8 +84,8 @@ export function WheelPage({
             >
               {busy ? (
                 <>
-                  <LoaderCircle className="loading-icon" size={21} />
-                  Finding your next thing…
+                  <LoaderCircle className="loading-icon" size={20} />
+                  Spinning…
                 </>
               ) : (
                 <>
@@ -96,36 +94,28 @@ export function WheelPage({
               )}
             </button>
             <div className="spin-caption" aria-live="polite">
-              {busy ? status : "A little serendipity goes a long way."}
+              {busy ? status : ""}
             </div>
-            <button
-              className="text-button category-edit"
-              disabled={busy}
-              onClick={() => setCustomize(true)}
-            >
-              <SlidersHorizontal size={13} />
-              {enabled.length === 8
-                ? "8 possibilities"
-                : `${enabled.length} possibilities`}{" "}
-              · Make it your wheel
-            </button>
-            {busy && (
-              <button className="text-button" onClick={onCancel}>
-                Cancel generation
+            {busy ? (
+              <button className="text-button category-edit" onClick={onCancel}>
+                Cancel
+              </button>
+            ) : (
+              <button
+                className="text-button category-edit"
+                onClick={() => setCustomize(true)}
+              >
+                <SlidersHorizontal size={14} />
+                {enabled.length} of 8 categories
               </button>
             )}
           </div>
         </section>
         <section className="mood-panel">
-          <div className="panel-kicker">
-            <Sparkles size={18} />
-            <span>Make it yours</span>
-          </div>
           <h2>
             What are you in
             <br className="panel-break" /> the mood for?
           </h2>
-          <p className="muted">Give chance a little direction.</p>
           <label className="sr-only" htmlFor="mood">
             What are you in the mood for?
           </label>
@@ -135,9 +125,9 @@ export function WheelPage({
               maxLength={200}
               value={mood}
               onChange={(e) => update({ mood: e.target.value })}
-              placeholder="Something small, useful, and a little unexpected…"
+              placeholder="Optional: small, useful, a little unexpected…"
             />
-            <span>{mood.length}/200</span>
+            {mood.length > 150 && <span>{mood.length}/200</span>}
           </div>
           <fieldset className="time-field">
             <legend>Time to build</legend>
@@ -175,15 +165,9 @@ export function WheelPage({
               </span>
               <ChevronDown size={16} />
             </button>
-            <p>
-              {settings.provider === "preview"
-                ? "Connect your favorite model in Settings."
-                : `${settings.model || "CLI default model"} · ${settings.effort === "default" ? "default" : settings.effort} thinking`}
-            </p>
-          </div>
-          <div className="memory-note">
-            <BookOpen size={22} />
-            <p>Your journal and feedback help shape every idea.</p>
+            {settings.provider !== "preview" && (
+              <p>{settings.model || "CLI default model"}</p>
+            )}
           </div>
         </section>
       </div>
@@ -197,46 +181,38 @@ export function WheelPage({
       )}
       {settings.provider === "preview" && (
         <div className="preview-note">
-          <span className="status-dot" /> Offline preview{" "}
-          <span>
-            Curated ideas for a test spin. Connect AI for live research.
-          </span>
+          <span className="status-dot" /> Offline preview · sample ideas
         </div>
       )}
       <section className="spark-section">
         <div className="section-heading">
-          <h2>Room for a spark</h2>
+          <h2>Capture a thought</h2>
           <button className="text-button" onClick={onOpenJournal}>
-            Open journal <ArrowRight size={16} />
+            Journal <ArrowRight size={16} />
           </button>
         </div>
         <div className="spark-options">
           <button onClick={() => onJournal()}>
             <Plus size={28} />
-            <span>Capture a thought</span>
+            <span>Write a note</span>
             <ArrowRight size={16} className="spark-arrow" />
           </button>
           <button onClick={() => onJournal(true)}>
             <ImagePlus size={28} />
-            <span>Drop an inspiration</span>
+            <span>Add a photo</span>
             <ArrowRight size={16} className="spark-arrow" />
           </button>
           <button onClick={onMemory}>
             <Leaf size={28} />
-            <span>Make it personal</span>
+            <span>Add a memory</span>
             <ArrowRight size={16} className="spark-arrow" />
           </button>
         </div>
       </section>
       {customize && (
-        <Modal title="Make it your wheel" onClose={() => setCustomize(false)}>
+        <Modal title="Categories" onClose={() => setCustomize(false)}>
           <div className="modal-body">
-            <h2>Leave room for possibility.</h2>
-            <p className="muted">
-              Choose the categories you’re open to. Every active category has an
-              equal chance
-              {avoidRepeat ? ", except the last one you landed on" : ""}.
-            </p>
+            <p className="muted">Pick what the wheel can land on.</p>
             <div className="category-picker">
               {categories.map((cat, i) => (
                 <button
@@ -251,15 +227,8 @@ export function WheelPage({
                 </button>
               ))}
             </div>
-            <p className="small muted">
-              Keep at least one category selected. All eight remain visible on
-              the wheel.
-            </p>
             <label className="toggle-row repeat-toggle">
-              <span>
-                Don’t land on the same category twice in a row. Applies when two
-                or more are active.
-              </span>
+              <span>No repeats in a row</span>
               <input
                 type="checkbox"
                 role="switch"
@@ -279,7 +248,7 @@ export function WheelPage({
                 className="button primary"
                 onClick={() => setCustomize(false)}
               >
-                Ready to spin
+                Done
               </button>
             </div>
           </div>
