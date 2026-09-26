@@ -7,3 +7,6 @@ dist/
 *.tsbuildinfo
 playwright-report/
 test-results/
+
+# Verification runs (verify-orbit skill)
+.verify-orbit/
