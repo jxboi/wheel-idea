@@ -111,7 +111,7 @@ async function launch() {
     if (!alive(child.pid)) break;
     await new Promise((r) => setTimeout(r, 300));
   }
-  stopRun(run);
+  await stopRun(run);
   fail(`server did not become ready; see ${path.join(dir, "server.log")}`);
 }
 
@@ -281,16 +281,31 @@ function expectFn() {
   };
 }
 
-function stopRun(run) {
-  const s = readState(run);
-  if (alive(s.pid)) {
-    // detached => the server is its own process group; kill only that group.
-    try {
-      process.kill(-s.pid, "SIGTERM");
-    } catch {
-      process.kill(s.pid, "SIGTERM");
-    }
+function groupAlive(pid) {
+  try {
+    process.kill(-pid, 0);
+    return true;
+  } catch {
+    return false;
   }
+}
+
+async function stopRun(run) {
+  const s = readState(run);
+  // detached => the server leads its own process group (tsx + node child);
+  // signal only that group, then wait until every member has exited.
+  const signal = (sig) => {
+    try {
+      process.kill(-s.pid, sig);
+    } catch {}
+  };
+  signal("SIGTERM");
+  const deadline = Date.now() + 5_000;
+  while (groupAlive(s.pid) && Date.now() < deadline)
+    await new Promise((r) => setTimeout(r, 100));
+  if (groupAlive(s.pid)) signal("SIGKILL");
+  await new Promise((r) => setTimeout(r, 200));
+  if (groupAlive(s.pid)) fail(`process group ${s.pid} is still alive`);
   s.stoppedAt = new Date().toISOString();
   fs.writeFileSync(stateFile(run), JSON.stringify(s, null, 2));
   console.log(
@@ -304,7 +319,7 @@ function list() {
     if (!fs.existsSync(stateFile(run))) continue;
     const s = readState(run);
     console.log(
-      `${run}  ${alive(s.pid) && !s.stoppedAt ? "RUNNING" : "stopped"}  ${s.url}`,
+      `${run}  ${groupAlive(s.pid) ? "RUNNING" : "stopped"}  ${s.url}`,
     );
   }
 }
@@ -322,7 +337,7 @@ else if (cmd === "drive") {
   if (!positional[1])
     fail("usage: drive <run> <flow.mjs> [--viewport mobile|desktop]");
   await drive(positional[0], positional[1], opts);
-} else if (cmd === "stop") stopRun(positional[0]);
+} else if (cmd === "stop") await stopRun(positional[0]);
 else if (cmd === "list") list();
 else
   fail("usage: launch | doctor <run> | drive <run> <flow> | stop <run> | list");

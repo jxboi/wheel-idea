@@ -86,7 +86,7 @@ Proof standards:
 
 ## Cleanup
 
-`node $H stop <run>` kills the process group the helper started, identified by the PID recorded in `state.json`, and marks the run as stopped. It never kills by process name, so the user's own `npm run dev` is safe. Browsers close at the end of every drive. Evidence stays where it is. Run `stop` after every failed iteration as well as at the end, then run `node $H list` to confirm nothing you launched is still `RUNNING`. Delete an old `.verify-orbit/<run>/` directory only when its evidence is no longer needed.
+`node $H stop <run>` kills the process group the helper started, identified by the PID recorded in `state.json`. It waits for the group to exit (escalating to SIGKILL after 5 s), fails if anything survives, and then marks the run as stopped. It never kills by process name, so the user's own `npm run dev` is safe. Browsers close at the end of every drive. Evidence stays where it is. Run `stop` after every failed iteration as well as at the end, then run `node $H list` to confirm nothing you launched is still `RUNNING`. Delete an old `.verify-orbit/<run>/` directory only when its evidence is no longer needed.
 
 ## Gotchas
 
