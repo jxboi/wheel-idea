@@ -677,111 +677,6 @@ main:focus {
   gap: 6px;
   min-height: 30px;
 }
-.mood-panel {
-  padding: 27px 27px 23px;
-  border: 1px solid #d9d5cb;
-  background: #fcfbf8b3;
-  border-radius: 14px;
-}
-.mood-panel h2 {
-  font-size: 29px;
-  line-height: 1.3;
-  margin-bottom: 5px;
-  letter-spacing: -0.65px;
-}
-.panel-break {
-  display: none;
-}
-.mood-panel > .muted {
-  font-size: 13px;
-  margin-bottom: 20px;
-}
-.mood-input {
-  position: relative;
-  margin-bottom: 24px;
-}
-.mood-input textarea {
-  height: 92px;
-  min-height: 92px;
-  resize: none;
-  padding: 13px 14px 26px;
-  background: #fffefeaa;
-  font-size: 12px;
-}
-.mood-input > span {
-  position: absolute;
-  right: 12px;
-  bottom: 10px;
-  font-size: 9px;
-  color: #838998;
-}
-.time-field legend {
-  font-family: var(--serif);
-  font-size: 16px;
-  font-weight: 500;
-  margin-bottom: 11px;
-}
-.time-options {
-  display: flex;
-  gap: 8px;
-}
-.time-options button {
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  white-space: nowrap;
-  font-size: 11px;
-  padding: 8px 6px;
-  background: #ffffff50;
-  min-height: 42px;
-}
-.time-options button.selected {
-  border-color: var(--blue);
-  background: #e6edf5;
-  box-shadow: inset 0 0 0 0.2px var(--blue);
-}
-.time-options button:hover {
-  background: #e9edf0;
-}
-.copilot {
-  border-top: 1px solid var(--border);
-  padding: 23px 0 0;
-  margin-top: 23px;
-}
-.copilot label {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  font-family: var(--serif);
-  font-size: 16px;
-  margin-bottom: 12px;
-}
-.select-button {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 9px 14px;
-  min-height: 41px;
-  background: #fffefe80;
-  font-size: 13px;
-}
-.select-button:hover {
-  border-color: #a5b4c8;
-}
-.copilot p {
-  font-size: 11px;
-  color: var(--muted);
-  line-height: 1.5;
-  margin: 7px 0 0;
-  overflow-wrap: anywhere;
-}
 .preview-note {
   font-size: 10px;
   color: #737c86;
@@ -1927,27 +1822,6 @@ main:focus {
     gap: 55px;
     grid-template-columns: 1.05fr 1fr;
   }
-  .mood-panel {
-    padding: 30px 31px;
-  }
-  .mood-panel h2 {
-    font-size: 32px;
-  }
-  .mood-panel > .muted {
-    font-size: 14px;
-  }
-  .mood-input textarea {
-    height: 105px;
-    font-size: 13px;
-  }
-  .time-options button {
-    font-size: 12px;
-    min-height: 46px;
-  }
-  .copilot {
-    padding: 25px 0 0;
-  }
-  .copilot p,
   .spin-button {
     height: 52px;
     font-size: 22px;
@@ -1993,29 +1867,6 @@ main:focus {
   .studio-grid {
     gap: 26px;
     grid-template-columns: minmax(0, 1.05fr) minmax(315px, 1fr);
-  }
-  .mood-panel {
-    padding: 23px 21px;
-  }
-  .mood-panel h2 {
-    font-size: 26px;
-  }
-  .time-options {
-    gap: 6px;
-  }
-  .time-options button {
-    font-size: 10px;
-    gap: 5px;
-  }
-  .time-options svg {
-    width: 15px;
-  }
-  .mood-input {
-    margin-bottom: 21px;
-  }
-  .copilot {
-    padding: 20px 0 0;
-    margin-top: 22px;
   }
   .spark-options > button {
     padding: 18px 15px;
@@ -2089,24 +1940,6 @@ main:focus {
   }
   .wheel-intro p {
     font-size: 16px;
-  }
-  .mood-panel {
-    padding: 20px 17px;
-  }
-  .mood-panel h2 {
-    font-size: 23px;
-  }
-  .mood-panel > .muted {
-    font-size: 11px;
-  }
-  .time-options button {
-    flex-direction: column;
-    gap: 5px;
-    font-size: 10px;
-    min-height: 57px;
-  }
-  .copilot label {
-    font-size: 14px;
   }
   .preview-note > span:last-child {
     display: none;
@@ -2291,36 +2124,6 @@ main:focus {
   .category-edit {
     font-size: 13px;
     min-height: 40px;
-  }
-  .mood-panel {
-    width: 100%;
-    padding: 24px;
-    border-radius: 13px;
-  }
-  .mood-panel h2 {
-    font-size: 28px;
-    max-width: 300px;
-    line-height: 1.25;
-  }
-  .mood-panel h2 {
-    font-size: 24px;
-  }
-  .mood-input textarea {
-    font-size: 16px;
-    height: 72px;
-  }
-  .time-options button {
-    font-size: 12px;
-    min-height: 44px;
-    padding: 7px 5px;
-    gap: 6px;
-  }
-  .time-options svg {
-    width: 16px;
-  }
-  .copilot p {
-    font-size: 12px;
-    overflow-wrap: anywhere;
   }
   .spark-section {
     max-width: 500px;
@@ -2627,12 +2430,6 @@ main:focus {
   .journal-cover {
     height: 215px;
   }
-  .mood-panel h2 {
-    font-size: 24px;
-  }
-  .time-options button {
-    font-size: 12px;
-  }
   .wheel-label {
     font-size: 16px;
   }
@@ -2725,9 +2522,6 @@ main:focus {
     align-items: start;
     gap: 48px;
   }
-  .mood-panel {
-    margin-top: 0;
-  }
   .wheel-stage {
     max-width: 530px;
   }
@@ -2754,13 +2548,161 @@ main:focus {
   font-size: 13px;
   text-align: left;
 }
-/* The live activity gets its own grid row, so the mood panel stays centered on
-   the wheel instead of moving as progress grows. */
+/* The tuner is a sentence, not a form: tappable words carry defaults, so the
+   only required action on this page is Spin. */
+.tuner {
+  max-width: 460px;
+}
+.tuner-sentence {
+  font-family: var(--serif);
+  font-size: 34px;
+  line-height: 1.45;
+  letter-spacing: -0.6px;
+  margin: 0;
+  color: var(--ink);
+}
+.tuner-word {
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--blue);
+  padding: 0 2px;
+  margin: 0 -2px;
+  border-radius: 6px;
+  text-decoration: underline dashed #45699f80;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 6px;
+  cursor: pointer;
+  text-align: left;
+}
+.tuner-word:hover,
+.tuner-word[aria-expanded="true"] {
+  background: #e6edf5;
+  text-decoration-style: solid;
+}
+.tuner-end {
+  white-space: nowrap;
+}
+.tuner-word.empty {
+  font-style: italic;
+}
+.tuner-pick {
+  position: relative;
+  display: inline-block;
+}
+.tuner-input {
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--blue);
+  background: #fffefe;
+  border: 0;
+  border-bottom: 1.5px solid var(--blue);
+  border-radius: 6px 6px 0 0;
+  padding: 0 4px;
+  max-width: 100%;
+  outline: none;
+}
+.tuner-input::placeholder {
+  color: #45699f80;
+  font-style: italic;
+}
+.tuner-menu {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 6px);
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 190px;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px #20305018;
+  font-family: "DM Sans", sans-serif;
+  font-size: 14px;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+.tuner-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 8px;
+  text-align: left;
+  white-space: nowrap;
+}
+.tuner-menu button:hover {
+  background: #e9edf0;
+}
+.tuner-menu button[aria-pressed="true"] {
+  color: var(--blue);
+}
+.tuner-menu .tick {
+  margin-left: auto;
+}
+.tuner-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-top: 22px;
+  font-size: 12px;
+  color: #80848c;
+}
+.tuner-meta .text-button {
+  font-size: 12px;
+  font-weight: 400;
+  color: #80848c;
+  gap: 6px;
+  min-height: 30px;
+}
+@media (max-width: 1000px) {
+  .tuner-sentence {
+    font-size: 28px;
+  }
+}
+@media (max-width: 760px) {
+  .tuner {
+    width: 100%;
+    max-width: 410px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .tuner-sentence {
+    font-size: 23px;
+    line-height: 1.5;
+    letter-spacing: -0.3px;
+  }
+  /* Open upward so the bottom navigation never covers the options. */
+  .tuner-menu {
+    top: auto;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .tuner-meta {
+    justify-content: center;
+    margin-top: 12px;
+  }
+  .tuner-meta .text-button {
+    font-size: 13px;
+    min-height: 40px;
+  }
+}
+@media (min-width: 1500px) {
+  .tuner-sentence {
+    font-size: 38px;
+  }
+}
+/* The live activity gets its own grid row, so the tuner stays centered on the
+   wheel instead of moving as progress grows. */
 @media (min-width: 761px) {
   .studio-grid {
     row-gap: 0;
   }
-  .mood-panel {
+  .tuner {
     grid-row: 1;
     grid-column: 2;
   }
