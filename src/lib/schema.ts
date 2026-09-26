@@ -91,7 +91,7 @@ export const preferencesSchema = z.object({
 });
 export type Preferences = z.infer<typeof preferencesSchema>;
 export const workspaceSchema = z.object({
-  version: z.literal(2),
+  version: z.literal(3),
   settings: settingsSchema,
   preferences: preferencesSchema,
   ideas: z.array(ideaSchema).max(2000),
@@ -99,9 +99,10 @@ export const workspaceSchema = z.object({
   memories: z.array(memorySchema).max(500),
 });
 export type Workspace = z.infer<typeof workspaceSchema>;
+export const defaultModel = "deepseek/deepseek-v4.1-flash";
 export const defaultSettings: Settings = {
-  provider: "preview",
-  model: "",
+  provider: "openrouter",
+  model: defaultModel,
   effort: "default",
   useMemory: true,
 };
@@ -112,7 +113,7 @@ export const defaultPreferences: Preferences = {
   avoidRepeat: false,
 };
 export const emptyWorkspace: Workspace = {
-  version: 2,
+  version: 3,
   settings: defaultSettings,
   preferences: defaultPreferences,
   ideas: [],
@@ -129,7 +130,7 @@ export const providerNames: Record<Provider, string> = {
 };
 export const modelDefaults: Record<Provider, string> = {
   preview: "",
-  openrouter: "openai/gpt-5.2",
+  openrouter: defaultModel,
   openai: "gpt-5.2",
   anthropic: "claude-sonnet-4-6",
   "codex-local": "",

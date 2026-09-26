@@ -11,19 +11,19 @@ npm install
 npm run dev
 ```
 
-Open http://127.0.0.1:5173. The app starts in **Offline preview**, which produces clearly labeled curated examples without an AI call. It is not live research and does not personalize results. All features can be explored without a key.
+Open http://127.0.0.1:5173. The app starts on **OpenRouter** with `deepseek/deepseek-v4.1-flash`. Spinning needs an OpenRouter key: paste one in Settings, or set `OPENROUTER_API_KEY` on the server (on Vercel, also set `ORBIT_ACCESS_TOKEN` and enter it in Settings as the workspace password). Without a key, a spin shows a recoverable error rather than an example. To explore without a key, choose **Offline preview** in Settings; it produces clearly labeled curated examples without an AI call, is not live research, and does not personalize results.
 
 ## Connect a model
 
 Open **Settings**, choose a provider, enter its model ID, choose thinking effort, and save. Use “Model default” if a model does not accept reasoning controls.
 
-| Provider | How it works | Research |
-| --- | --- | --- |
-| OpenRouter | Chat completions, any supported model ID | `openrouter:web_search` server tool |
-| OpenAI API | Responses API | Native `web_search`, required tool use |
-| Claude API | Messages API | Native web search; adaptive thinking when effort is selected |
-| Local Codex | Installed, signed-in Codex CLI | CLI live web search |
-| Local Claude | Installed, signed-in Claude CLI | WebSearch-only tool access |
+| Provider     | How it works                             | Research                                                     |
+| ------------ | ---------------------------------------- | ------------------------------------------------------------ |
+| OpenRouter   | Chat completions, any supported model ID | `openrouter:web_search` server tool                          |
+| OpenAI API   | Responses API                            | Native `web_search`, required tool use                       |
+| Claude API   | Messages API                             | Native web search; adaptive thinking when effort is selected |
+| Local Codex  | Installed, signed-in Codex CLI           | CLI live web search                                          |
+| Local Claude | Installed, signed-in Claude CLI          | WebSearch-only tool access                                   |
 
 API keys entered in Settings remain **in memory for this tab only**. They are sent via headers to your Orbit server, which forwards requests to the selected provider. They are never written to IndexedDB or exported. Do not use an untrusted deployment with your API key.
 
