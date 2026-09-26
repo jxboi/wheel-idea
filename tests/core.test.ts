@@ -11,6 +11,7 @@ import { previewBrief } from "../src/lib/preview";
 import { parseBrief, generateFromAPI } from "../server/providers.js";
 import { parseWorkspace } from "../src/lib/migrations";
 import handler from "../api/generate.js";
+import { progressEventSchema } from "../shared/contract.js";
 
 describe("wheel geometry", () => {
   it("lands every sector at the pointer after repeated spins", () => {
@@ -551,6 +552,84 @@ describe("research provenance and continuation", () => {
       pages: [{ url: "https://b.dev/y", title: "B" }],
     });
     expect(result.sources).toEqual([
+      { title: "B", url: "https://b.dev/y", verified: true },
+    ]);
+  });
+  it("reads OpenRouter's live stream shape with citations before the brief", async () => {
+    // As observed from deepseek/deepseek-v4.1-flash with openrouter:web_search:
+    // citations arrive early, one per chunk with empty content; reasoning comes
+    // in a few large chunks; a usage chunk follows the finish.
+    const delta = (fields: object) => ({
+      choices: [
+        { index: 0, delta: { role: "assistant", content: "", ...fields } },
+      ],
+    });
+    const cite = (url: string, title: string) =>
+      delta({
+        annotations: [
+          {
+            type: "url_citation",
+            url_citation: {
+              url,
+              title,
+              start_index: 0,
+              end_index: 0,
+              content: "…",
+            },
+          },
+        ],
+      });
+    const long = "r".repeat(25000);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        sse([
+          delta({ reasoning: "Let me search. " }),
+          cite("https://a.dev/x", "A"),
+          cite("https://b.dev/y", "B"),
+          delta({ reasoning: long }),
+          ...pieces(JSON.stringify({ ...brief, sources: [] })).map((content) =>
+            delta({ content }),
+          ),
+          {
+            choices: [
+              {
+                index: 0,
+                delta: { role: "assistant", content: "" },
+                finish_reason: "stop",
+              },
+            ],
+          },
+          {
+            choices: [
+              {
+                index: 0,
+                delta: { role: "assistant", content: "" },
+                finish_reason: "stop",
+              },
+            ],
+            usage: { server_tool_use_details: { web_search_requests: 2 } },
+          },
+          "[DONE]",
+        ]),
+      ),
+    );
+    const progress = vi.fn();
+    const result = await generateFromAPI(
+      apiInput("openrouter"),
+      "k",
+      undefined,
+      progress,
+    );
+    const events = progress.mock.calls.map(([event]) => event);
+    expect(events.filter((e) => e.type === "pages")).toHaveLength(2);
+    // Oversized reasoning keeps its tail so it still fits the progress schema.
+    const thinking = events.filter((e) => e.type === "thinking");
+    expect(thinking[1].text).toHaveLength(20000);
+    for (const event of events)
+      expect(progressEventSchema.safeParse(event).success).toBe(true);
+    expect(result.sources).toEqual([
+      { title: "A", url: "https://a.dev/x", verified: true },
       { title: "B", url: "https://b.dev/y", verified: true },
     ]);
   });

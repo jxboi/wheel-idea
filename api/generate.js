@@ -4,7 +4,7 @@ import { progressMediaType, requestSchema } from "../shared/contract.js";
 import { generateFromAPI } from "../server/providers.js";
 import { generateLocal, localToolsEnabled } from "../server/local.js";
 
-export const config = { maxDuration: 120 };
+export const config = { maxDuration: 300 };
 
 /**
  * @param {string} left

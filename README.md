@@ -46,7 +46,7 @@ Import this repository as a **Vite** project. `vercel.json` configures the build
 - Build command: `npm run build`
 - Output directory: `dist`
 - Node version: 22.x
-- API timeout: 120 seconds (check your Vercel plan’s limits)
+- API timeout: 300 seconds, which needs Fluid compute (on by default). Searching models such as DeepSeek V4.1 Flash often take 90–120 seconds.
 - Browser keys work without server environment credentials.
 - If using server credentials, also set a strong `ORBIT_ACCESS_TOKEN` and enter it as the **Workspace password** in Settings. Server-funded requests on Vercel are rejected without it.
 - Do not enable the local CLI setting on Vercel.

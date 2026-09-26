@@ -17,8 +17,8 @@ export type { Credentials };
 
 const spinMs = 4900;
 const reducedSpinMs = 150;
-// Slightly below the server's 120-second function limit.
-const requestTimeoutMs = 118000;
+// Slightly below the server’s 300-second function limit.
+const requestTimeoutMs = 295000;
 const renderEveryMs = 120;
 
 /**

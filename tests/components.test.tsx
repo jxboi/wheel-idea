@@ -166,6 +166,26 @@ describe("activity panel", () => {
     expect(screen.getByText("Pocket Puzzles")).toBeTruthy();
     expect(screen.getByText("Writing your brief…")).toBeTruthy();
   });
+  it("tells apart pages that share a host", () => {
+    const a = applyEvent(applyEvent(base, { type: "started", local: false }), {
+      type: "pages",
+      pages: [
+        { url: "https://www.example.com/trends/2026-report", title: "A" },
+        {
+          url: "https://example.com/blog/meaning-over-measurement/",
+          title: "B",
+        },
+        { url: "https://other.dev/x", title: "C" },
+      ],
+    });
+    panel(a);
+    for (const name of [
+      "example.com/2026-report",
+      "example.com/meaning-over-measurement",
+      "other.dev",
+    ])
+      expect(screen.getByRole("link", { name })).toBeTruthy();
+  });
   it("says so when memory is off", () => {
     panel({ ...base, ingredients: { ...base.ingredients, memory: null } });
     expect(screen.getByText("Memory off")).toBeTruthy();

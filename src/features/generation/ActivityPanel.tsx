@@ -29,6 +29,23 @@ function host(url: string) {
   }
 }
 
+/** Host alone, or host plus the last path segment when several pages share it. */
+function pageLabels(urls: string[]) {
+  const hosts = urls.map(host);
+  return urls.map((url, i) => {
+    if (hosts.indexOf(hosts[i]) === hosts.lastIndexOf(hosts[i]))
+      return hosts[i];
+    try {
+      const last = new URL(url).pathname.split("/").filter(Boolean).pop();
+      if (!last) return hosts[i];
+      const slug = decodeURIComponent(last).replace(/\.[a-z0-9]+$/i, "");
+      return `${hosts[i]}/${slug.length > 24 ? `${slug.slice(0, 24)}…` : slug}`;
+    } catch {
+      return hosts[i];
+    }
+  });
+}
+
 function elapsed(ms: number) {
   const s = Math.max(0, Math.floor(ms / 1000));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
@@ -133,6 +150,8 @@ export function ActivityPanel({
   const provider = providerNames[settings.provider];
   const step = currentStep(activity);
   const { searches, pages, thinking, draft } = activity;
+  const shownPages = pages.slice(0, 8);
+  const pageLabel = pageLabels(shownPages.map((page) => page.url));
   const brief = partialBrief(draft);
   const waited = now - activity.startedAt;
 
@@ -202,7 +221,7 @@ export function ActivityPanel({
             title={`Found ${plural(pages.length, "page")}`}
           >
             <ul className="activity-pages">
-              {pages.slice(0, 8).map((page) => (
+              {shownPages.map((page, index) => (
                 <li key={page.url}>
                   <a
                     href={page.url}
@@ -210,7 +229,7 @@ export function ActivityPanel({
                     rel="noopener noreferrer"
                     title={page.title || page.url}
                   >
-                    {host(page.url)}
+                    {pageLabel[index]}
                   </a>
                 </li>
               ))}

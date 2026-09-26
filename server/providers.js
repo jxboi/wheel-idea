@@ -13,7 +13,7 @@ import { json, pagesFrom, readEvents } from "./stream.js";
 /** @typedef {import("../shared/contract.js").Brief} Brief */
 /** @typedef {import("../shared/contract.js").OnProgress} OnProgress */
 
-export const providerDeadlineMs = 105000;
+export const providerDeadlineMs = 285000;
 const maxContinuations = 3;
 
 /**
@@ -110,8 +110,10 @@ async function readOpenRouter(body, progress) {
     if (chunk.error) throw streamError(chunk.error.message);
     const choice = chunk.choices?.[0];
     const delta = choice?.delta ?? {};
+    // OpenRouter can deliver reasoning in a few large chunks; keep the tail so
+    // the event stays within the progress schema instead of being dropped.
     if (typeof delta.reasoning === "string" && delta.reasoning)
-      progress({ type: "thinking", text: delta.reasoning });
+      progress({ type: "thinking", text: delta.reasoning.slice(-20000) });
     if (typeof delta.content === "string" && delta.content) {
       content += delta.content;
       progress({ type: "draft", text: delta.content });
