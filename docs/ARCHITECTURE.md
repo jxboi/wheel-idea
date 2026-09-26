@@ -7,7 +7,9 @@
 - `src/features/generation/request.ts`: the `/api/generate` client. Reads the NDJSON progress stream and validates the final brief.
 - `src/features/generation/activity.ts` and `ActivityPanel.tsx`: pure progress model (event folding, current step, partial-draft reading) and the live panel under the wheel.
 - `src/lib/actions.ts`: pure workspace transitions. They keep untouched records by identity, which is what makes incremental writes possible.
-- `src/pages/`: five independent product surfaces. Editing and selection stay in their owning view.
+- `src/pages/`: four product surfaces (wheel, library, journal, settings). Editing and selection stay in their owning view.
+- `src/pages/settings/`: the settings hub and one module per sub-page (AI model, memory, wheel, backup, privacy), addressed as `#settings/<section>`. The old `#memory` hash opens the memory sub-page.
+- `src/features/wheel/CategoryPicker.tsx`: category and no-repeat controls shared by the wheel dialog and wheel settings.
 - `src/components/`: shell, native accessible dialog, wheel, icons, and idea detail.
 - `shared/contract.js`: the wire contract (categories, settings, brief, request) shared by browser, API, and tests. Plain JS with JSDoc so Vercel’s Node runtime loads it unbundled.
 - `src/lib/schema.ts`: Zod domain models built on the shared contract. No server credentials belong here.

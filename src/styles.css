@@ -1502,11 +1502,6 @@ main:focus {
   margin-top: 23px;
   gap: 15px;
 }
-.memory-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 50px;
-}
 .memory-add label {
   font-size: 13px;
   margin-bottom: 12px;
@@ -1556,16 +1551,6 @@ main:focus {
   width: 100%;
   margin-top: 0;
 }
-.memory-settings {
-  border: 1px solid var(--border);
-  background: #f0f1e9;
-  border-radius: 12px;
-  padding: 24px;
-  height: fit-content;
-}
-.memory-settings h3 {
-  margin-bottom: 24px;
-}
 .toggle-row {
   display: flex;
   justify-content: space-between;
@@ -1605,9 +1590,6 @@ main:focus {
 .toggle-row input:checked:before {
   transform: translateX(14px);
 }
-.memory-settings > .small {
-  font-size: 11px;
-}
 .memory-sources {
   margin: 25px 0;
   padding: 22px 0;
@@ -1635,25 +1617,134 @@ main:focus {
   font-weight: 500;
   color: var(--ink);
 }
-.settings-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 590px) minmax(230px, 300px);
-  gap: 65px;
+/* Settings is a hub of grouped rows; each row opens its own sub-page. */
+.settings-home,
+.settings-subpage {
+  max-width: 640px;
 }
-.settings-main {
-  border-top: 1px solid var(--border);
-  padding-top: 26px;
-}
-.settings-main .section-heading {
-  margin-bottom: 10px;
-}
-.settings-main > .muted {
+.settings-group h2 {
+  font-family: inherit;
   font-size: 13px;
-  margin-bottom: 27px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--muted);
+  margin: 0 0 10px 4px;
 }
-.settings-main > label {
+.settings-group ul {
+  list-style: none;
+  margin: 0 0 32px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.settings-group li {
+  position: relative;
+}
+.settings-group li + li::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 52px;
+  right: 0;
+  border-top: 1px solid var(--border);
+}
+.settings-group button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 16px 14px 18px;
+  text-align: left;
+  font-size: 15px;
+}
+.settings-group button:hover {
+  background: #f3f1ea;
+}
+.settings-group button > svg:first-child {
+  color: #5b6475;
+}
+.settings-row-label {
+  flex: 1;
+}
+.settings-row-value {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: right;
+}
+.settings-row-chevron {
+  color: #a5a9b0;
+}
+.settings-back {
+  margin: 0 0 10px -4px;
+  gap: 2px;
+}
+.settings-subpage .page-intro {
+  margin-top: 0;
+}
+.settings-panel > .muted {
+  font-size: 13px;
+  margin: 0 0 20px;
+}
+.settings-form > label {
   font-size: 12px;
   margin-top: 25px;
+}
+.settings-form > label:first-child {
+  margin-top: 0;
+}
+.provider-docs {
+  display: flex;
+  width: fit-content;
+  font-size: 12px;
+}
+.settings-card {
+  border: 1px solid var(--border);
+  background: #f0f1e9;
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 32px;
+}
+.settings-card .toggle-row {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.settings-card .small {
+  font-size: 11px;
+  margin: 0;
+}
+.memory-panel .memory-sources {
+  margin-top: 32px;
+}
+.category-reset {
+  margin-top: 14px;
+}
+.backup-panel .button {
+  margin-top: 10px;
+}
+.privacy-panel section {
+  display: flex;
+  gap: 14px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
+}
+.privacy-panel section:first-child {
+  padding-top: 0;
+}
+.privacy-panel section > svg {
+  color: #7a8a72;
+  margin-top: 2px;
+}
+.privacy-panel h3 {
+  font-size: 17px;
+  margin-bottom: 6px;
+}
+.privacy-panel p {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 4px;
 }
 .optional {
   font-size: 10px;
@@ -1730,37 +1821,6 @@ main:focus {
 }
 .settings-save {
   margin: 24px 0;
-}
-.settings-side {
-  padding-top: 26px;
-}
-.settings-side section {
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 26px;
-}
-.settings-side section > svg {
-  color: #7a8a72;
-  margin-bottom: 20px;
-}
-.settings-side h2 {
-  font-size: 24px;
-  margin-bottom: 15px;
-}
-.settings-side h3 {
-  margin-bottom: 15px;
-}
-.settings-side p {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.85;
-}
-.settings-side .button {
-  margin-top: 10px;
-  font-size: 12px;
-}
-.settings-side > .text-button {
-  font-size: 12px;
 }
 .import-confirm {
   background: #f1e8d7;
@@ -1889,13 +1949,6 @@ main:focus {
   .journal-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .memory-layout {
-    gap: 30px;
-    grid-template-columns: minmax(0, 1fr) 270px;
-  }
-  .settings-layout {
-    gap: 35px;
-  }
   .library-toolbar {
     flex-wrap: wrap;
     gap: 10px;
@@ -1951,20 +2004,6 @@ main:focus {
   }
   .spark-options > button > svg:first-child {
     width: 22px;
-  }
-  .memory-layout {
-    grid-template-columns: 1fr;
-  }
-  .memory-settings {
-    max-width: none;
-  }
-  .settings-layout {
-    grid-template-columns: 1fr;
-  }
-  .settings-side {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 25px;
   }
   .page-heading-row {
     align-items: flex-start;
@@ -2245,13 +2284,6 @@ main:focus {
   .journal-card-body {
     padding: 22px;
   }
-  .memory-layout {
-    grid-template-columns: 1fr;
-    gap: 30px;
-  }
-  .memory-settings {
-    order: 2;
-  }
   .memory-list-heading h2 {
     font-size: 23px;
   }
@@ -2263,23 +2295,6 @@ main:focus {
   }
   .memory-list article p {
     font-size: 12px;
-  }
-  .settings-layout {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  .settings-side {
-    padding-top: 15px;
-  }
-  .settings-main > .section-heading h2 {
-    font-size: 25px;
-  }
-  .settings-side section {
-    padding: 22px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: #f0f1e9;
-    margin-bottom: 18px;
   }
   .modal {
     max-height: 94dvh;
