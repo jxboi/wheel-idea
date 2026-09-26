@@ -68,7 +68,7 @@ describe("workspace storage", () => {
     const { version: _version, preferences: _p, ...rest } = sample();
     await seedV1({ ...rest, version: 1 });
     const loaded = await storage.loadWorkspace();
-    expect(loaded.version).toBe(2);
+    expect(loaded.version).toBe(3);
     expect(loaded.ideas.map((i) => i.id)).toEqual(["new", "old"]);
     expect(loaded.entries[0].images[0].dataUrl).toBe(photo);
     const db = await openDB("orbit-studio");

@@ -22,6 +22,7 @@
 - `api/generate.js`: HTTP boundary, validation, origin checks, credential routing, workspace-token guard, and abort-on-disconnect.
 
 All server code is plain ESM JavaScript with explicit `.js` imports and `// @ts-check`. The tests import exactly the modules Vercel runs, and CI loads the handler under plain Node to confirm the import graph resolves.
+
 - `server/dev.ts`: loopback-only Vite middleware server with the same API handler and a request body limit.
 
 ## Data flow
@@ -38,7 +39,7 @@ Workspace writes are serialized to prevent older saves from overtaking newer one
 
 ## Data model and migrations
 
-`Workspace v2 = settings + preferences + ideas + entries + memories`. v1 had no `preferences`, and its `cited` status meant only that the model listed sources, so the v1→v2 migration sets those ideas to `unverified`. All timestamps are ISO strings, identities use UUIDs, and photos are compressed JPEGs. In memory and in backups they are data URLs. In IndexedDB (database version 2) they are Blobs in an `images` store, and entries keep only image ids and names. Existing backup schemas are explicit. Introduce migrations before changing a persisted field or bumping `version`; never silently clear a user’s journal on schema errors.
+`Workspace v3 = settings + preferences + ideas + entries + memories`. v1 had no `preferences`, and its `cited` status meant only that the model listed sources, so the v1→v2 migration sets those ideas to `unverified`. v2→v3 changes the default provider from Offline preview to OpenRouter with `deepseek/deepseek-v4.1-flash`; only workspaces still on the untouched preview default (provider `preview`, no model) are moved, keeping their memory toggle. All timestamps are ISO strings, identities use UUIDs, and photos are compressed JPEGs. In memory and in backups they are data URLs. In IndexedDB (database version 2) they are Blobs in an `images` store, and entries keep only image ids and names. Existing backup schemas are explicit. Introduce migrations before changing a persisted field or bumping `version`; never silently clear a user’s journal on schema errors.
 
 An `Idea` records its provider, model, effort, category, time budget, sources, editable prompt, reactions, and feedback. Research status is `preview`, `cited` (at least one source matches a page the provider’s search returned), `unverified` (sources listed, none matched), or `uncited`. The `verified` flag on a source is set only by the server, and `parseBrief` strips any value the model supplies. A match shows the page was retrieved, not that it supports the claim. API responses need all brief fields.
 

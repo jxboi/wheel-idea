@@ -87,9 +87,9 @@ describe("validation", () => {
   });
   it("rejects invalid backup versions without coercion", () => {
     expect(
-      workspaceSchema.safeParse({ ...emptyWorkspace, version: 3 }).success,
+      workspaceSchema.safeParse({ ...emptyWorkspace, version: 4 }).success,
     ).toBe(false);
-    expect(() => parseWorkspace({ ...emptyWorkspace, version: 3 })).toThrow();
+    expect(() => parseWorkspace({ ...emptyWorkspace, version: 4 })).toThrow();
     expect(() => parseWorkspace({ version: 1, settings: {} })).toThrow();
   });
   it("migrates v1 backups and stops calling model-listed sources cited", () => {
@@ -117,13 +117,32 @@ describe("validation", () => {
       memories: [],
     };
     const migrated = parseWorkspace(v1);
-    expect(migrated.version).toBe(2);
+    expect(migrated.version).toBe(3);
     expect(migrated.preferences).toEqual(emptyWorkspace.preferences);
     expect(migrated.ideas.map((i) => i.researchStatus)).toEqual([
       "unverified",
       "uncited",
     ]);
     expect(migrated.ideas[0].sources[0].url).toBe("https://example.com/a");
+  });
+  it("moves v2 workspaces on the untouched preview default to OpenRouter", () => {
+    const v2 = (settings: object) => ({
+      ...emptyWorkspace,
+      version: 2,
+      settings: { ...emptyWorkspace.settings, ...settings },
+    });
+    const untouched = parseWorkspace(
+      v2({ provider: "preview", model: "", useMemory: false }),
+    );
+    expect(untouched.version).toBe(3);
+    expect(untouched.settings).toEqual({
+      provider: "openrouter",
+      model: "deepseek/deepseek-v4.1-flash",
+      effort: "default",
+      useMemory: false,
+    });
+    const chosen = { provider: "openai", model: "gpt-5.2", effort: "high" };
+    expect(parseWorkspace(v2(chosen)).settings).toMatchObject(chosen);
   });
   it("finds the brief after prose that contains braces", () => {
     const brief = previewBrief("Games", "A weekend", "");
