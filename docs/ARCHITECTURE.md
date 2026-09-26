@@ -24,7 +24,10 @@
 - `server/stream.js`: server-sent event reader and the page filter applied before anything is shown as progress.
 - `server/provenance.js`: extracts the pages each provider’s search actually returned and marks model-listed sources as verified or not.
 - `server/local.js`: optional developer-local CLI adapters. `localCommand` is the single place argument arrays are built. Vercel explicitly refuses them.
-- `api/generate.js`: HTTP boundary, validation, origin checks, credential routing, workspace-token guard, and abort-on-disconnect.
+- `api/generate.js`: HTTP boundary, validation, origin checks, credential routing, server-key guard (allowlisted GitHub session or workspace token), and abort-on-disconnect.
+- `server/auth.js` and `api/auth/{login,callback,session}.js`: GitHub OAuth sign-in. The callback checks a state cookie, reads the GitHub user, revokes GitHub's token, and issues a signed HttpOnly session cookie only to ids in `ORBIT_ALLOWED_GITHUB_IDS`. The allowlist is re-checked on every generation request.
+- `src/features/auth/session.ts`: the browser side: session status, sign-out, and the one-time `?auth=` result after the redirect.
+- `src/features/generation/credentials.ts`: tab-scoped (`sessionStorage`) holding for a pasted API key and the workspace password, so reloads keep them without writing them to persistent storage.
 
 All server code is plain ESM JavaScript with explicit `.js` imports and `// @ts-check`. The tests import exactly the modules Vercel runs, and CI loads the handler under plain Node to confirm the import graph resolves.
 
@@ -61,7 +64,7 @@ An `Idea` records its provider, model, effort, category, time budget, sources, e
 
 ## Deliberate constraints
 
-No cloud accounts or sync yet. No embeddings/vector store. Source verification confirms a page was retrieved, not that it supports the claim. Local tools are text-only and development-only. No live model call was made during initial QA; transport behavior was validated with fixtures. Local CLIs are isolated from the project, but are installed programs using the developer’s existing account. Do not turn them into public execution endpoints.
+No cloud sync yet; GitHub sign-in only gates server-funded generation. No embeddings/vector store. Source verification confirms a page was retrieved, not that it supports the claim. Local tools are text-only and development-only. No live model call was made during initial QA; transport behavior was validated with fixtures. Local CLIs are isolated from the project, but are installed programs using the developer’s existing account. Do not turn them into public execution endpoints.
 
 ## Testing
 

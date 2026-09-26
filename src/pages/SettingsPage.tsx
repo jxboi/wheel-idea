@@ -1,5 +1,6 @@
 import type { Preferences, Settings, Workspace, Memory } from "../lib/schema";
 import type { Credentials } from "../features/generation/useGeneration";
+import type { AuthState } from "../features/auth/session";
 import type { SettingsSection } from "./settings/sections";
 import { SettingsHome } from "./settings/SettingsHome";
 import { SettingsSubpage } from "./settings/Subpage";
@@ -25,6 +26,8 @@ export function SettingsPage({
   onSave,
   credentials,
   onCredentials,
+  auth,
+  onSignOut,
   onPreferences,
   onUseMemory,
   onAddMemory,
@@ -39,6 +42,8 @@ export function SettingsPage({
   onSave: (s: Settings) => void;
   credentials: Credentials;
   onCredentials: (c: Credentials) => void;
+  auth: AuthState;
+  onSignOut: () => void;
   onPreferences: (p: Preferences) => void;
   onUseMemory: (enabled: boolean) => void;
   onAddMemory: (text: string) => void;
@@ -57,6 +62,8 @@ export function SettingsPage({
           onSave={onSave}
           credentials={credentials}
           onCredentials={onCredentials}
+          auth={auth}
+          onSignOut={onSignOut}
           toast={toast}
         />
       )}

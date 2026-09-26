@@ -2744,3 +2744,41 @@ main:focus {
     grid-column: 1;
   }
 }
+.github-account {
+  margin-top: 25px;
+}
+.github-account-label {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+.github-account .button {
+  gap: 9px;
+}
+.github-signed-in {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 8px 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 13px;
+}
+.github-signed-in > svg {
+  color: #8c929b;
+  flex: none;
+}
+.github-signed-in > span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.github-signed-in strong {
+  font-weight: 500;
+}
+.github-signed-in .text-button {
+  gap: 5px;
+  font-size: 12px;
+  flex: none;
+}

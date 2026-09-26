@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-Open http://127.0.0.1:5173. The app starts on **OpenRouter** with `deepseek/deepseek-v4.1-flash`. Spinning needs an OpenRouter key: paste one in Settings, or set `OPENROUTER_API_KEY` on the server (on Vercel, also set `ORBIT_ACCESS_TOKEN` and enter it in Settings as the workspace password). Without a key, a spin shows a recoverable error rather than an example. To explore without a key, choose **Offline preview** in Settings; it produces clearly labeled curated examples without an AI call, is not live research, and does not personalize results.
+Open http://127.0.0.1:5173. The app starts on **OpenRouter** with `deepseek/deepseek-v4.1-flash`. Spinning needs an OpenRouter key: paste one in Settings, or set `OPENROUTER_API_KEY` on the server (on Vercel, also set up GitHub sign-in or a workspace password; see [Deploy to Vercel](#deploy-to-vercel)). Without a key, a spin shows a recoverable error rather than an example. To explore without a key, choose **Offline preview** in Settings; it produces clearly labeled curated examples without an AI call, is not live research, and does not personalize results.
 
 ## Connect a model
 
@@ -48,12 +48,14 @@ Import this repository as a **Vite** project. `vercel.json` configures the build
 - Node version: 22.x
 - API timeout: 120 seconds (check your Vercel plan’s limits)
 - Browser keys work without server environment credentials.
-- If using server credentials, also set a strong `ORBIT_ACCESS_TOKEN` and enter it as the **Workspace password** in Settings. Server-funded requests on Vercel are rejected without it.
+- If using server credentials, Vercel rejects server-funded requests unless the visitor is signed in with an allowed GitHub account or enters the workspace password.
+- **GitHub sign-in (recommended).** Create a GitHub OAuth app (GitHub → Settings → Developer settings → OAuth Apps) with the callback URL `https://<your-domain>/api/auth/callback`. Set `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and `ORBIT_ALLOWED_GITHUB_IDS` (comma-separated numeric GitHub user ids; find yours at `https://api.github.com/users/<username>`). An empty allowlist lets nobody in. Settings then shows **Sign in with GitHub** instead of the password. The session is a signed, HttpOnly cookie that lasts 30 days; Orbit revokes GitHub's access token right after reading who signed in. Optionally set `ORBIT_SESSION_SECRET` to sign sessions with a key separate from the client secret. Changing either secret signs everyone out, and removing an id from the allowlist revokes access on the next request.
+- **Workspace password.** Set a strong `ORBIT_ACCESS_TOKEN` and enter it as the **Workspace password** in Settings. It is kept for the browser tab only. It keeps working alongside GitHub sign-in until you remove the variable.
 - Do not enable the local CLI setting on Vercel.
 
 `npm run preview` serves static production files only; it does not run the API. Use `npm run dev` for the complete local app or Vercel for production.
 
-The foundation is designed for a personal workspace. Before turning it into a shared hosted service, add individual authentication, per-user durable storage, shared rate limiting, and spending controls. The workspace password protects server-funded calls but is not a user account system.
+The foundation is designed for a personal workspace. Before turning it into a shared hosted service, add individual authentication, per-user durable storage, shared rate limiting, and spending controls. GitHub sign-in and the workspace password protect server-funded calls; they do not sync data between devices.
 
 ## What is included
 

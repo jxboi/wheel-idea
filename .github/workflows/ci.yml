@@ -20,4 +20,4 @@ jobs:
       - run: npm run build
       # The Vercel function runs as plain Node ESM without a bundler; make sure
       # its import graph resolves exactly as deployed.
-      - run: node -e 'import("./api/generate.js")'
+      - run: node -e 'Promise.all(["generate", "auth/login", "auth/callback", "auth/session"].map((f) => import(`./api/${f}.js`)))'

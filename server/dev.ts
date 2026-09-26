@@ -1,6 +1,9 @@
 import { createServer } from "node:http";
 import { loadEnv, createServer as createViteServer } from "vite";
 import handler from "../api/generate.js";
+import login from "../api/auth/login.js";
+import callback from "../api/auth/callback.js";
+import session from "../api/auth/session.js";
 import type { ApiRequest, ApiResponse } from "./http";
 Object.assign(process.env, loadEnv("development", process.cwd(), ""));
 const vite = await createViteServer({
@@ -13,7 +16,28 @@ const server = createServer(async (req, res) => {
     res.end("Orbit local development accepts localhost requests only.");
     return;
   }
-  if (req.url?.split("?")[0] === "/api/generate") {
+  const path = req.url?.split("?")[0];
+  const auth = {
+    "/api/auth/login": login,
+    "/api/auth/callback": callback,
+    "/api/auth/session": session,
+  }[path ?? ""];
+  if (path === "/api/generate" || auth) {
+    const response = res as ApiResponse;
+    response.status = (code: number) => {
+      res.statusCode = code;
+      return response;
+    };
+    response.json = (value: unknown) => {
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify(value));
+      return response;
+    };
+    if (auth) {
+      (req as ApiRequest).body = null;
+      await auth(req as ApiRequest, response);
+      return;
+    }
     let body = "";
     for await (const chunk of req) {
       body += chunk;
@@ -32,16 +56,6 @@ const server = createServer(async (req, res) => {
       res.end(JSON.stringify({ error: "Invalid request." }));
       return;
     }
-    const response = res as ApiResponse;
-    response.status = (code: number) => {
-      res.statusCode = code;
-      return response;
-    };
-    response.json = (value: unknown) => {
-      res.setHeader("Content-Type", "application/json");
-      res.end(JSON.stringify(value));
-      return response;
-    };
     await handler(req as ApiRequest, response);
     return;
   }

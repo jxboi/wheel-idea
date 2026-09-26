@@ -188,6 +188,8 @@ describe("SettingsPage", () => {
     onSave: noop,
     credentials: { key: "", token: "" },
     onCredentials: noop,
+    auth: { loaded: true, configured: false, user: null },
+    onSignOut: noop,
     onPreferences: noop,
     onUseMemory: noop,
     onAddMemory: noop,
@@ -204,6 +206,44 @@ describe("SettingsPage", () => {
     expect(onSection).toHaveBeenCalledWith("memory");
     for (const name of [/^AI model/, /^Wheel/, /^Backup/, /^Privacy/])
       expect(screen.getByRole("button", { name })).toBeTruthy();
+  });
+
+  it("offers the workspace password when GitHub sign-in is not set up", () => {
+    render(<SettingsPage {...props} section="model" onSection={noop} />);
+    expect(screen.getByLabelText(/Workspace password/)).toBeTruthy();
+    expect(screen.queryByText("Sign in with GitHub")).toBeNull();
+  });
+
+  it("replaces the password with GitHub sign-in when it is set up", () => {
+    const onSignOut = vi.fn();
+    const { rerender } = render(
+      <SettingsPage
+        {...props}
+        section="model"
+        onSection={noop}
+        auth={{ loaded: true, configured: true, user: null }}
+      />,
+    );
+    expect(screen.queryByLabelText(/Workspace password/)).toBeNull();
+    expect(
+      screen.getByRole("link", { name: /Sign in with GitHub/ }),
+    ).toHaveProperty("pathname", "/api/auth/login");
+    rerender(
+      <SettingsPage
+        {...props}
+        section="model"
+        onSection={noop}
+        onSignOut={onSignOut}
+        auth={{
+          loaded: true,
+          configured: true,
+          user: { id: 1, login: "octocat" },
+        }}
+      />,
+    );
+    expect(screen.getByText("@octocat")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /Sign out/ }));
+    expect(onSignOut).toHaveBeenCalled();
   });
 
   it("shows the memory toggle on the memory sub-page and goes back", () => {

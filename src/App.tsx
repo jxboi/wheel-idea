@@ -30,6 +30,7 @@ import {
   loadCredentials,
   storeCredentials,
 } from "./features/generation/credentials";
+import { takeAuthOutcome, useAuth } from "./features/auth/session";
 
 // Secondary surfaces load on demand so the wheel paints sooner.
 const LibraryPage = lazy(() =>
@@ -92,6 +93,7 @@ export default function App() {
   }, []);
   const update = (change: (w: Workspace) => Workspace) => setWorkspace(change);
   useEffect(() => storeCredentials(credentials), [credentials]);
+  const { auth, signOut } = useAuth();
   const onCancelled = useCallback(() => toast("Cancelled."), [toast]);
   const generation = useGeneration({
     workspace,
@@ -117,6 +119,8 @@ export default function App() {
           "Orbit couldn’t open this browser’s storage. Your data has not been overwritten. Enable browser storage, then reload.",
         ),
       );
+    const outcome = takeAuthOutcome();
+    if (outcome) toast(outcome);
     const fn = () => setRoute(currentRoute());
     window.addEventListener("hashchange", fn);
     return () => window.removeEventListener("hashchange", fn);
@@ -253,6 +257,15 @@ export default function App() {
               }}
               credentials={credentials}
               onCredentials={setCredentials}
+              auth={auth}
+              onSignOut={async () => {
+                try {
+                  await signOut();
+                  toast("Signed out of GitHub.");
+                } catch {
+                  toast("Couldn’t sign out. Check your connection.");
+                }
+              }}
               onPreferences={(p) => update((w) => actions.setPreferences(w, p))}
               onUseMemory={(enabled) =>
                 update((w) => actions.setUseMemory(w, enabled))

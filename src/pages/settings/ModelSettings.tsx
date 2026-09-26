@@ -8,6 +8,8 @@ import {
   Globe,
   Eye,
   EyeOff,
+  Github,
+  LogOut,
 } from "lucide-react";
 import {
   providerNames,
@@ -16,17 +18,22 @@ import {
   type Provider,
 } from "../../lib/schema";
 import type { Credentials } from "../../features/generation/useGeneration";
+import type { AuthState } from "../../features/auth/session";
 export function ModelSettings({
   settings,
   onSave,
   credentials,
   onCredentials,
+  auth,
+  onSignOut,
   toast,
 }: {
   settings: Settings;
   onSave: (s: Settings) => void;
   credentials: Credentials;
   onCredentials: (c: Credentials) => void;
+  auth: AuthState;
+  onSignOut: () => void;
   toast: (text: string) => void;
 }) {
   const [draft, setDraft] = useState(settings);
@@ -151,19 +158,64 @@ export function ModelSettings({
               <p className="field-hint">
                 Never saved. Leave empty to use a server key.
               </p>
-              <label htmlFor="workspace-token">
-                Workspace password <span className="optional">optional</span>
-              </label>
-              <input
-                id="workspace-token"
-                type="password"
-                autoComplete="off"
-                value={secrets.token}
-                onChange={(e) =>
-                  setSecrets({ ...secrets, token: e.target.value })
-                }
-                placeholder="For a shared server key"
-              />
+              {auth.configured ? (
+                <div className="github-account">
+                  <span className="github-account-label">
+                    Server key access
+                  </span>
+                  {auth.user ? (
+                    <div className="github-signed-in">
+                      <Github size={18} />
+                      <span>
+                        Signed in as <strong>@{auth.user.login}</strong>
+                      </span>
+                      <button
+                        type="button"
+                        className="text-button"
+                        onClick={onSignOut}
+                      >
+                        <LogOut size={15} />
+                        Sign out
+                      </button>
+                    </div>
+                  ) : (
+                    <a
+                      className="button secondary full-width"
+                      href="/api/auth/login"
+                      onClick={() => {
+                        // Keep unsaved edits; sign-in leaves the page.
+                        onSave(draft);
+                        onCredentials(secrets);
+                      }}
+                    >
+                      <Github size={17} />
+                      Sign in with GitHub
+                    </a>
+                  )}
+                  <p className="field-hint">
+                    {auth.user
+                      ? "Spins without your own key use the server’s key."
+                      : "Needed to use the server’s key. Not needed with your own key."}
+                  </p>
+                </div>
+              ) : auth.loaded ? (
+                <>
+                  <label htmlFor="workspace-token">
+                    Workspace password{" "}
+                    <span className="optional">optional</span>
+                  </label>
+                  <input
+                    id="workspace-token"
+                    type="password"
+                    autoComplete="off"
+                    value={secrets.token}
+                    onChange={(e) =>
+                      setSecrets({ ...secrets, token: e.target.value })
+                    }
+                    placeholder="For a shared server key"
+                  />
+                </>
+              ) : null}
             </>
           )}
           <div className="research-note">
