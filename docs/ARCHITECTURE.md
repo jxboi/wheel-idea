@@ -20,6 +20,7 @@
 - `server/provenance.js`: extracts the pages each provider’s search actually returned and marks model-listed sources as verified or not.
 - `server/local.js`: optional developer-local CLI adapters. `localCommand` is the single place argument arrays are built. Vercel explicitly refuses them.
 - `api/generate.js`: HTTP boundary, validation, origin checks, credential routing, workspace-token guard, and abort-on-disconnect.
+- `api/device.js` and `server/device.js`: remember-this-device. After the workspace password is checked once, an HttpOnly cookie carrying a signed expiry (HMAC keyed by `ORBIT_ACCESS_TOKEN`) stands in for it on `/api/generate`. Rotating the token revokes every grant.
 
 All server code is plain ESM JavaScript with explicit `.js` imports and `// @ts-check`. The tests import exactly the modules Vercel runs, and CI loads the handler under plain Node to confirm the import graph resolves.
 

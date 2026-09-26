@@ -4,7 +4,7 @@ Read README.md, docs/ARCHITECTURE.md, and docs/design/DESIGN.md before changing 
 
 - This is a React + Vite + TypeScript personal workspace. Keep the warm editorial design, functional SVG wheel, local fonts, and mobile bottom navigation.
 - Use `npm run dev` for both UI and API. `vite preview` alone has no generation API.
-- Keep provider integrations server-side. Never put credentials in `VITE_*`, persistent browser storage, logs, or exports.
+- Keep provider integrations server-side. Never put credentials in `VITE_*`, persistent browser storage, logs, or exports. The one persisted grant is the HttpOnly remembered-device cookie (`server/device.js`), which holds a signed expiry, never the password or a key.
 - Preserve versioned Zod schemas and introduce explicit migrations for persistent data changes.
 - Never substitute offline examples for failed live AI requests. Label research provenance honestly.
 - Personal context must respect both the global memory toggle and each journal entry’s sharing setting. Forgetting memory must exclude it from future prompts.

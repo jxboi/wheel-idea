@@ -49,6 +49,7 @@ Import this repository as a **Vite** project. `vercel.json` configures the build
 - API timeout: 120 seconds (check your Vercel plan’s limits)
 - Browser keys work without server environment credentials.
 - If using server credentials, also set a strong `ORBIT_ACCESS_TOKEN` and enter it as the **Workspace password** in Settings. Server-funded requests on Vercel are rejected without it.
+- Leave **Remember this device for 30 days** checked to skip the password on later visits. The server sets an `HttpOnly`, `SameSite=Strict` cookie scoped to `/api` that holds only an expiry and an HMAC keyed by `ORBIT_ACCESS_TOKEN`; the password and API key are never stored in the browser. Use **Forget** in Settings to remove it on one device, or change `ORBIT_ACCESS_TOKEN` (and redeploy) to sign out every remembered device.
 - Do not enable the local CLI setting on Vercel.
 
 `npm run preview` serves static production files only; it does not run the API. Use `npm run dev` for the complete local app or Vercel for production.

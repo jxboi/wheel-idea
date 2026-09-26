@@ -1,21 +1,10 @@
 // @ts-check
-import { timingSafeEqual } from "node:crypto";
 import { requestSchema } from "../shared/contract.js";
 import { generateFromAPI } from "../server/providers.js";
 import { generateLocal, localToolsEnabled } from "../server/local.js";
+import { workspaceUnlocked } from "../server/device.js";
 
 export const config = { maxDuration: 120 };
-
-/**
- * @param {string} left
- * @param {string} right
- */
-function equal(left, right) {
-  return (
-    Buffer.byteLength(left) === Buffer.byteLength(right) &&
-    timingSafeEqual(Buffer.from(left), Buffer.from(right))
-  );
-}
 
 /**
  * @param {import("../server/http").ApiRequest} req
@@ -69,9 +58,7 @@ export default async function handler(req, res) {
       .status(401)
       .json({ error: "Connect an API key in Settings, then spin again." });
   if (!suppliedKey && !local && process.env.VERCEL) {
-    const expected = process.env.ORBIT_ACCESS_TOKEN;
-    const received = String(req.headers["x-workspace-token"] ?? "");
-    if (!expected || !equal(received, expected))
+    if (!workspaceUnlocked(req.headers))
       return res.status(401).json({
         error:
           "Enter the workspace password in Settings to use the server’s API key.",

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowUpRight,
   Check,
@@ -22,6 +22,12 @@ import {
 } from "../lib/schema";
 import { safeParseWorkspace } from "../lib/migrations";
 import { download } from "../lib/files";
+import {
+  deviceState,
+  forgetDevice,
+  rememberDevice,
+  type DeviceState,
+} from "../lib/device";
 import type { Credentials } from "../features/generation/useGeneration";
 export function SettingsPage({
   settings,
@@ -45,6 +51,13 @@ export function SettingsPage({
   const [showKey, setShowKey] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<Workspace | null>(null);
+  const [device, setDevice] = useState<DeviceState | null>(null);
+  const [remember, setRemember] = useState(true);
+  useEffect(() => {
+    deviceState()
+      .then(setDevice)
+      .catch(() => setDevice(null));
+  }, []);
   const local = draft.provider.endsWith("-local");
   const preview = draft.provider === "preview";
   const changeProvider = (provider: Provider) => {
@@ -64,9 +77,24 @@ export function SettingsPage({
       <div className="settings-layout">
         <form
           className="settings-main"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
             onSave(draft);
+            const token = secrets.token.trim();
+            if (device?.available && !device.remembered && remember && token) {
+              try {
+                await rememberDevice(token);
+                setDevice({ ...device, remembered: true });
+                // The cookie now unlocks spins; no need to keep the password.
+                setSecrets({ ...secrets, token: "" });
+                onCredentials({ ...secrets, token: "" });
+                toast("Saved. This device is remembered.");
+              } catch (error) {
+                onCredentials(secrets);
+                toast((error as Error).message);
+              }
+              return;
+            }
             onCredentials(secrets);
             toast("Settings saved.");
           }}
@@ -174,20 +202,54 @@ export function SettingsPage({
                   <p className="field-hint">
                     Never saved. Leave empty to use a server key.
                   </p>
-                  <label htmlFor="workspace-token">
-                    Workspace password{" "}
-                    <span className="optional">optional</span>
-                  </label>
-                  <input
-                    id="workspace-token"
-                    type="password"
-                    autoComplete="off"
-                    value={secrets.token}
-                    onChange={(e) =>
-                      setSecrets({ ...secrets, token: e.target.value })
-                    }
-                    placeholder="For a shared server key"
-                  />
+                  {device?.remembered ? (
+                    <div className="device-row">
+                      <ShieldCheck size={17} />
+                      <span>This device is remembered</span>
+                      <button
+                        type="button"
+                        className="text-button"
+                        onClick={async () => {
+                          try {
+                            await forgetDevice();
+                            setDevice({ ...device, remembered: false });
+                            toast("This device is forgotten.");
+                          } catch (error) {
+                            toast((error as Error).message);
+                          }
+                        }}
+                      >
+                        Forget
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <label htmlFor="workspace-token">
+                        Workspace password{" "}
+                        <span className="optional">optional</span>
+                      </label>
+                      <input
+                        id="workspace-token"
+                        type="password"
+                        autoComplete="off"
+                        value={secrets.token}
+                        onChange={(e) =>
+                          setSecrets({ ...secrets, token: e.target.value })
+                        }
+                        placeholder="For a shared server key"
+                      />
+                      {device?.available && (
+                        <label className="check-row device-check">
+                          <input
+                            type="checkbox"
+                            checked={remember}
+                            onChange={(e) => setRemember(e.target.checked)}
+                          />
+                          <span>Remember this device for 30 days</span>
+                        </label>
+                      )}
+                    </>
+                  )}
                 </>
               )}
               <div className="research-note">

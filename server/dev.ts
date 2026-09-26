@@ -1,6 +1,7 @@
 import { createServer } from "node:http";
 import { loadEnv, createServer as createViteServer } from "vite";
 import handler from "../api/generate.js";
+import deviceHandler from "../api/device.js";
 import type { ApiRequest, ApiResponse } from "./http";
 Object.assign(process.env, loadEnv("development", process.cwd(), ""));
 const vite = await createViteServer({
@@ -13,7 +14,8 @@ const server = createServer(async (req, res) => {
     res.end("Orbit local development accepts localhost requests only.");
     return;
   }
-  if (req.url?.split("?")[0] === "/api/generate") {
+  const path = req.url?.split("?")[0];
+  if (path === "/api/generate" || path === "/api/device") {
     let body = "";
     for await (const chunk of req) {
       body += chunk;
@@ -42,7 +44,10 @@ const server = createServer(async (req, res) => {
       res.end(JSON.stringify(value));
       return response;
     };
-    await handler(req as ApiRequest, response);
+    await (path === "/api/device" ? deviceHandler : handler)(
+      req as ApiRequest,
+      response,
+    );
     return;
   }
   vite.middlewares(req, res);
