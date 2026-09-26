@@ -26,6 +26,10 @@ import {
   useGeneration,
   type Credentials,
 } from "./features/generation/useGeneration";
+import {
+  loadCredentials,
+  storeCredentials,
+} from "./features/generation/credentials";
 
 // Secondary surfaces load on demand so the wheel paints sooner.
 const LibraryPage = lazy(() =>
@@ -69,10 +73,7 @@ export default function App() {
   const [saveError, setSaveError] = useState("");
   const [route, setRoute] = useState<Route>(currentRoute);
   const { page, section } = route;
-  const [credentials, setCredentials] = useState<Credentials>({
-    key: "",
-    token: "",
-  });
+  const [credentials, setCredentials] = useState<Credentials>(loadCredentials);
   const [notice, setNotice] = useState("");
   const [detailId, setDetailId] = useState<string | null>(null);
   const [journalDraft, setJournalDraft] = useState<Entry | null>(null);
@@ -90,6 +91,7 @@ export default function App() {
     toastTimer.current = setTimeout(() => setNotice(""), 5000);
   }, []);
   const update = (change: (w: Workspace) => Workspace) => setWorkspace(change);
+  useEffect(() => storeCredentials(credentials), [credentials]);
   const onCancelled = useCallback(() => toast("Cancelled."), [toast]);
   const generation = useGeneration({
     workspace,
