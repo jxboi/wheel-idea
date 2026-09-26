@@ -4,6 +4,8 @@
 
 - `src/App.tsx`: composition, routing, persistence scheduling, and notifications. Secondary pages and the idea detail load lazily. Hash navigation supports browser back/forward without a router dependency.
 - `src/features/generation/useGeneration.ts`: the spin lifecycle (category pick, animation, request, cancellation, stale-result guard).
+- `src/features/generation/request.ts`: the `/api/generate` client. Reads the NDJSON progress stream and validates the final brief.
+- `src/features/generation/activity.ts` and `ActivityPanel.tsx`: pure progress model (event folding, current step, partial-draft reading) and the live panel under the wheel.
 - `src/lib/actions.ts`: pure workspace transitions. They keep untouched records by identity, which is what makes incremental writes possible.
 - `src/pages/`: five independent product surfaces. Editing and selection stay in their owning view.
 - `src/components/`: shell, native accessible dialog, wheel, icons, and idea detail.
@@ -16,7 +18,8 @@
 - `src/lib/wheel.ts`: unbiased eight-category selection and landing geometry. Category subsets, including the optional no-repeat exclusion, use rejection sampling.
 - `src/lib/preview.ts`: explicit offline examples, never a fallback for failed real requests.
 - `server/prompt.js`: provider-independent brief instruction and contextual input.
-- `server/providers.js`: outbound API adapters, Claude `pause_turn` continuation, and defensive result parsing. Never import into browser code.
+- `server/providers.js`: streaming outbound API adapters, Claude `pause_turn` continuation (turns are rebuilt from stream events and sent back unchanged), and defensive result parsing. Never import into browser code.
+- `server/stream.js`: server-sent event reader and the page filter applied before anything is shown as progress.
 - `server/provenance.js`: extracts the pages each provider’s search actually returned and marks model-listed sources as verified or not.
 - `server/local.js`: optional developer-local CLI adapters. `localCommand` is the single place argument arrays are built. Vercel explicitly refuses them.
 - `api/generate.js`: HTTP boundary, validation, origin checks, credential routing, workspace-token guard, and abort-on-disconnect.
@@ -31,9 +34,11 @@ All server code is plain ESM JavaScript with explicit `.js` imports and `// @ts-
 2. Begin animation and AI request together. UI waits for both before presenting the result.
 3. Build memory context from approved notes, idea reactions, and explicitly shared journal entries.
 4. Send validated inputs to `/api/generate`. Credentials travel in headers, never JSON backups.
-5. The selected adapter requests research and a structured brief. A schema rejects incomplete output and unsafe source protocols.
+5. The selected adapter streams research and a structured brief. As it runs, the server forwards what the provider actually reports (search queries, pages returned, exposed reasoning, brief text) as NDJSON progress, and the wheel page shows it next to what the user shared. Nothing is simulated: a provider that reports nothing shows nothing but elapsed time. The last line is the validated brief or an error; the brief schema still rejects incomplete output and unsafe source protocols.
 6. Store the idea locally, then show the dialog. A failed request leaves an actionable error; it does not invent a result.
 7. Feedback creates an explicit memory record. Reactions remain in recent-idea context. Deleted ideas also remove related memory records.
+
+Progress is opt-in per request (`Accept: application/x-ndjson`); other clients still get one JSON response. Errors raised before generation starts keep their HTTP status. Once streaming begins the status is 200, so failures arrive as a final `error` line with the key redacted. OpenAI refuses to stream some models for unverified organizations; that one error retries the same request without streaming, and progress is skipped.
 
 Workspace writes are serialized to prevent older saves from overtaking newer ones, and each write is a single transaction containing only the records that differ from the last stored snapshot. Startup validation failures do not overwrite data. Storage failures remain visible and the current in-memory workspace can still be exported. Cancellation discards stale results and aborts the browser request. The API handler then aborts the provider request or kills the local CLI. A provider may still bill for work already done, so do not present cancellation as a billing guarantee.
 
@@ -47,7 +52,7 @@ An `Idea` records its provider, model, effort, category, time budget, sources, e
 
 1. Add a model capability catalog and searchable model picker with available effort levels per model. The current free-form ID supports custom/new models without redeploying.
 2. Add authenticated cloud persistence behind a repository interface and object storage for photos, retaining local export and explicit AI-sharing semantics.
-3. Add true streaming generation. Preserve provenance, cancellation, and malformed-output handling.
+3. Stream local CLI progress (`claude --output-format stream-json`, Codex JSON events). API providers already stream.
 4. Introduce semantic retrieval/summarization only after keeping provenance, deletion, and opt-out behavior correct.
 5. Add a public-service rate limiter and per-user usage budgets before sharing server-funded generation widely.
 6. Merge concurrent edits across tabs (currently detected and warned about, not merged).
@@ -64,7 +69,8 @@ Unit/contract tests cover:
 - memory exclusion, private journal omission, and context budgets
 - valid previews, malformed AI replies, and source schemes
 - backups and the v1 migration
-- provider request bodies, `pause_turn` continuation, and source provenance for all three APIs
+- provider request bodies, `pause_turn` continuation, and source provenance for all three APIs, driven by SSE fixtures
+- stream failures (mid-stream errors, truncation, early close), the NDJSON endpoint, the client reader, and the progress model
 - abort-on-disconnect and HTTP security boundaries
 - local CLI argument arrays
 - IndexedDB migration, round-trips, and incremental writes (`fake-indexeddb`)

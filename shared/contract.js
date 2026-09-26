@@ -69,3 +69,29 @@ export const requestSchema = z.object({
 /** @typedef {z.infer<typeof sourceSchema>} Source */
 /** @typedef {z.infer<typeof briefSchema>} Brief */
 /** @typedef {z.infer<typeof requestSchema>} GenerateRequest */
+
+// Live progress, streamed as newline-delimited JSON while a brief is generated.
+// Every event describes something that actually happened in the provider run.
+export const progressMediaType = "application/x-ndjson";
+export const pageSchema = z.object({
+  title: z.string().max(500),
+  url: sourceSchema.shape.url,
+});
+export const progressEventSchema = z.discriminatedUnion("type", [
+  // The server accepted the request and handed it to the provider.
+  z.object({ type: z.literal("started"), local: z.boolean() }),
+  // A web search the model ran, with its query.
+  z.object({ type: z.literal("search"), query: z.string().max(500) }),
+  // Pages the provider's search tool returned.
+  z.object({ type: z.literal("pages"), pages: z.array(pageSchema).max(20) }),
+  // Reasoning text the provider chose to expose, appended as it arrives.
+  z.object({ type: z.literal("thinking"), text: z.string().max(20000) }),
+  // Brief output appended as it is written. Not validated until "result".
+  z.object({ type: z.literal("draft"), text: z.string().max(30000) }),
+  z.object({ type: z.literal("result"), brief: briefSchema }),
+  z.object({ type: z.literal("error"), error: z.string().max(2000) }),
+]);
+
+/** @typedef {z.infer<typeof pageSchema>} Page */
+/** @typedef {z.infer<typeof progressEventSchema>} ProgressEvent */
+/** @typedef {(event: ProgressEvent) => void} OnProgress */

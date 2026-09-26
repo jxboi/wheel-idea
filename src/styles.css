@@ -482,11 +482,16 @@ main:focus {
   font-size: 21px;
   font-style: italic;
 }
-.spin-actions {
+.spin-actions,
+.activity-slot {
   width: 88%;
   max-width: 430px;
   text-align: center;
   margin-top: 12px;
+}
+.activity-slot {
+  justify-self: center;
+  margin-top: 0;
 }
 .spin-button {
   width: 100%;
@@ -500,16 +505,170 @@ main:focus {
   position: absolute;
   right: 20px;
 }
-.spin-caption {
-  font-size: 11px;
-  line-height: 1.5;
-  color: #767c89;
-  margin-top: 10px;
-  min-height: 17px;
+.activity {
+  /* Keep the spin button visible above it when scrolled into view. */
+  scroll-margin-top: 150px;
+  margin: 2px 0 0;
+  padding: 14px 16px 12px;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
 }
-.spin-caption:empty {
-  min-height: 0;
-  margin-top: 0;
+.activity-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #ebe8e1;
+}
+.activity-now {
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.35;
+  color: var(--ink);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.activity-clock {
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
+.activity-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.activity-step {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  animation: activity-in 0.35s ease-out;
+}
+.activity-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #e8edf5;
+  color: var(--blue);
+}
+.activity-step.done .activity-icon {
+  background: #e6ede3;
+  color: #4f7249;
+}
+.activity-step.active .activity-icon {
+  box-shadow: 0 0 0 0 #45699f55;
+  animation: activity-pulse 1.6s ease-out infinite;
+}
+.activity-body {
+  min-width: 0;
+  padding-top: 2px;
+}
+.activity-title {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.activity-step.done .activity-title {
+  color: #5d6370;
+}
+.activity-chips,
+.activity-pages,
+.activity-queries {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.activity-chips li,
+.activity-pages li {
+  font-size: 12px;
+  line-height: 1.4;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #f1efe9;
+  color: #4d5465;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.activity-pages li {
+  background: none;
+  border: 1px solid var(--border);
+}
+.activity-pages a {
+  color: var(--blue);
+}
+.activity-queries {
+  display: grid;
+  gap: 2px;
+}
+.activity-queries li,
+.activity-thinking {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #5d6370;
+  overflow-wrap: anywhere;
+}
+.activity-thinking {
+  margin: 4px 0 0;
+}
+.activity-draft-title {
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.35;
+  color: var(--ink);
+  margin: 4px 0 2px;
+  overflow-wrap: anywhere;
+}
+.activity-draft-summary {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #4d5465;
+  margin: 0 0 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.activity-meta,
+.activity-note {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 2px 0 0;
+}
+.activity-note {
+  margin-top: 10px;
+  padding-left: 32px;
+}
+@keyframes activity-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@keyframes activity-pulse {
+  70% {
+    box-shadow: 0 0 0 6px #45699f00;
+  }
+  100% {
+    box-shadow: 0 0 0 0 #45699f00;
+  }
 }
 .category-edit {
   font-size: 12px;
@@ -1796,9 +1955,6 @@ main:focus {
   .wheel-intro p {
     font-size: 23px;
   }
-  .spin-caption {
-    font-size: 12px;
-  }
   .toast {
     left: calc(50% + 120px);
   }
@@ -2114,22 +2270,23 @@ main:focus {
     height: 35px;
     top: -9px;
   }
-  .spin-actions {
+  .spin-actions,
+  .activity-slot {
     width: 94%;
     margin-top: 14px;
     max-width: 410px;
+  }
+  .activity-slot {
+    align-self: center;
+    margin-top: -26px;
   }
   .spin-button {
     height: 52px;
     font-size: 20px;
   }
-  .spin-caption {
-    font-size: 13px;
-    margin-top: 8px;
-    min-height: 0;
-  }
-  .spin-caption:empty {
-    margin-top: 0;
+  .activity {
+    margin-top: 12px;
+    padding: 12px 14px 10px;
   }
   .category-edit {
     font-size: 13px;
@@ -2574,7 +2731,8 @@ main:focus {
   .wheel-stage {
     max-width: 530px;
   }
-  .spin-actions {
+  .spin-actions,
+  .activity-slot {
     max-width: 465px;
   }
   .preview-note {
@@ -2595,4 +2753,19 @@ main:focus {
   margin: 18px 0 0;
   font-size: 13px;
   text-align: left;
+}
+/* The live activity gets its own grid row, so the mood panel stays centered on
+   the wheel instead of moving as progress grows. */
+@media (min-width: 761px) {
+  .studio-grid {
+    row-gap: 0;
+  }
+  .mood-panel {
+    grid-row: 1;
+    grid-column: 2;
+  }
+  .activity-slot {
+    grid-row: 2;
+    grid-column: 1;
+  }
 }
