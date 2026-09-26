@@ -2439,7 +2439,7 @@ main:focus {
   /* 16px keeps iOS Safari from zooming in on focus. */
   :is(.main-wrap, .modal)
     :is(
-      input:not([type="checkbox"]):not(.journal-title-input),
+      input:not([type="checkbox"]):not(.journal-title-input):not(.tuner-input),
       textarea,
       select
     ) {
@@ -2625,8 +2625,14 @@ main:focus {
   border-bottom: 1.5px solid var(--blue);
   border-radius: 6px 6px 0 0;
   padding: 0 4px;
-  max-width: 100%;
+  /* Sized by its size attribute, so it reads as a word in the sentence and the
+     full stop stays beside it. */
+  width: auto;
+  max-width: calc(100% - 0.5em);
   outline: none;
+}
+.tuner-input:focus {
+  box-shadow: none;
 }
 .tuner-input::placeholder {
   color: #45699f80;
