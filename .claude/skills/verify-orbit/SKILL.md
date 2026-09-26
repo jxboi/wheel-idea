@@ -35,7 +35,7 @@ Teardown is `node $H stop <run>`.
 Run `node $H doctor <run>` before the first drive, and again after any failed drive. It is read-only and exits non-zero on any `FAIL`:
 
 - the server process we started is alive
-- the log has the ready line for *our* port
+- the log has the ready line for _our_ port
 - HEAD is the same commit as at launch (if not, relaunch: the server may be serving mixed code)
 - `/` serves the Orbit shell (`id="root"`)
 - a schema-valid OpenRouter request with no key returns `401 Connect an API key…`, which proves the API is up **and** holds no server credential
@@ -55,14 +55,14 @@ A flow is an ES module whose default export receives `{ page, context, url, out,
 
 Shipped flows (in `flows/`; each passed at both viewports when this skill was generated):
 
-| Flow                   | Feature file                     |
-| ---------------------- | -------------------------------- |
-| `spin-preview.mjs`     | `features/spin.md`               |
-| `spin-missing-key.mjs` | `features/spin.md`               |
-| `idea-library.mjs`     | `features/idea-library.md`       |
-| `journal.mjs`          | `features/journal.md`            |
-| `memory.mjs`           | `features/memory.md`             |
-| `wheel-categories.mjs` | `features/wheel-categories.md`   |
+| Flow                   | Feature file                   |
+| ---------------------- | ------------------------------ |
+| `spin-preview.mjs`     | `features/spin.md`             |
+| `spin-missing-key.mjs` | `features/spin.md`             |
+| `idea-library.mjs`     | `features/idea-library.md`     |
+| `journal.mjs`          | `features/journal.md`          |
+| `memory.mjs`           | `features/memory.md`           |
+| `wheel-categories.mjs` | `features/wheel-categories.md` |
 
 `flows/_lib.mjs` holds the shared user moves: `go(page, "Idea library" | "Journal" | "Settings" | "The wheel")` clicks whichever navigation the viewport shows, `usePreview` switches to Offline preview through Settings, `spin` spins and waits for the `Idea` dialog, and `toast` finds a `role=status` toast.
 

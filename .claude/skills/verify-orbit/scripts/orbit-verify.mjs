@@ -120,7 +120,9 @@ async function doctor(run) {
   const checks = [];
   const check = (name, ok, detail = "") => {
     checks.push(ok);
-    console.log(`${ok ? "ok  " : "FAIL"} ${name}${detail ? ` - ${detail}` : ""}`);
+    console.log(
+      `${ok ? "ok  " : "FAIL"} ${name}${detail ? ` - ${detail}` : ""}`,
+    );
   };
   check("server process alive", alive(s.pid), `pid ${s.pid}`);
   const log = fs.readFileSync(path.join(runDir(run), "server.log"), "utf8");
@@ -205,7 +207,10 @@ async function drive(run, flowPath, opts) {
   const proof = async (name) => {
     const base = path.join(out, `${String(++n).padStart(2, "0")}-${name}`);
     await page.screenshot({ path: `${base}.png` });
-    fs.writeFileSync(`${base}.aria.txt`, await page.locator("body").ariaSnapshot());
+    fs.writeFileSync(
+      `${base}.aria.txt`,
+      await page.locator("body").ariaSnapshot(),
+    );
     log(`proof ${path.relative(repo, base)}.{png,aria.txt}`);
   };
   const noOverflow = async () => {
@@ -216,15 +221,29 @@ async function drive(run, flowPath, opts) {
     if (doc > win) throw new Error(`horizontal overflow: ${doc}px > ${win}px`);
     log(`no horizontal overflow (${doc}px)`);
   };
-  log(`drive ${path.relative(repo, flow)} at ${s.url} ${viewport.width}x${viewport.height}`);
+  log(
+    `drive ${path.relative(repo, flow)} at ${s.url} ${viewport.width}x${viewport.height}`,
+  );
   let failed = null;
   let allow = [];
   try {
     const mod = await import(pathToFileURL(flow).href);
     allow = mod.allowConsole || [];
     await page.goto(s.url + "/");
-    await page.getByRole("button", { name: "Spin the wheel" }).first().waitFor();
-    await mod.default({ page, context, url: s.url, out, log, proof, noOverflow, expect: expectFn() });
+    await page
+      .getByRole("button", { name: "Spin the wheel" })
+      .first()
+      .waitFor();
+    await mod.default({
+      page,
+      context,
+      url: s.url,
+      out,
+      log,
+      proof,
+      noOverflow,
+      expect: expectFn(),
+    });
   } catch (e) {
     failed = e;
     log(`FAILED ${e.message}`);
@@ -234,7 +253,8 @@ async function drive(run, flowPath, opts) {
   }
   // Vite HMR noise appears when another dev server owns port 24678; the app
   // does not depend on HMR. Flows list any expected errors in `allowConsole`.
-  const hmr = /\[vite\]|ws:\/\/127\.0\.0\.1:24678|WebSocket closed without opened/;
+  const hmr =
+    /\[vite\]|ws:\/\/127\.0\.0\.1:24678|WebSocket closed without opened/;
   const unexpected = problems.filter(
     (p) => !hmr.test(p) && !allow.some((re) => re.test(p)),
   );
@@ -250,8 +270,10 @@ async function drive(run, flowPath, opts) {
 // Minimal assertions so flows need no test runner.
 function expectFn() {
   return async (locator, what = "visible", timeout = 10_000) => {
-    if (what === "visible") await locator.first().waitFor({ state: "visible", timeout });
-    else if (what === "hidden") await locator.first().waitFor({ state: "hidden", timeout });
+    if (what === "visible")
+      await locator.first().waitFor({ state: "visible", timeout });
+    else if (what === "hidden")
+      await locator.first().waitFor({ state: "hidden", timeout });
     else if (what === "absent") {
       const count = await locator.count();
       if (count) throw new Error(`expected none, found ${count}: ${locator}`);
@@ -271,7 +293,9 @@ function stopRun(run) {
   }
   s.stoppedAt = new Date().toISOString();
   fs.writeFileSync(stateFile(run), JSON.stringify(s, null, 2));
-  console.log(`stopped ${run}; evidence kept at ${path.join(runDir(run), "evidence")}`);
+  console.log(
+    `stopped ${run}; evidence kept at ${path.join(runDir(run), "evidence")}`,
+  );
 }
 
 function list() {
@@ -279,7 +303,9 @@ function list() {
   for (const run of fs.readdirSync(root).sort()) {
     if (!fs.existsSync(stateFile(run))) continue;
     const s = readState(run);
-    console.log(`${run}  ${alive(s.pid) && !s.stoppedAt ? "RUNNING" : "stopped"}  ${s.url}`);
+    console.log(
+      `${run}  ${alive(s.pid) && !s.stoppedAt ? "RUNNING" : "stopped"}  ${s.url}`,
+    );
   }
 }
 
@@ -293,8 +319,10 @@ for (let i = 0; i < args.length; i++) {
 if (cmd === "launch") await launch();
 else if (cmd === "doctor") await doctor(positional[0]);
 else if (cmd === "drive") {
-  if (!positional[1]) fail("usage: drive <run> <flow.mjs> [--viewport mobile|desktop]");
+  if (!positional[1])
+    fail("usage: drive <run> <flow.mjs> [--viewport mobile|desktop]");
   await drive(positional[0], positional[1], opts);
 } else if (cmd === "stop") stopRun(positional[0]);
 else if (cmd === "list") list();
-else fail("usage: launch | doctor <run> | drive <run> <flow> | stop <run> | list");
+else
+  fail("usage: launch | doctor <run> | drive <run> <flow> | stop <run> | list");

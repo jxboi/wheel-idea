@@ -3,10 +3,17 @@ import { usePreview, spin, toast, go } from "./_lib.mjs";
 
 export default async function ({ page, out, log, proof, noOverflow, expect }) {
   await usePreview(page, expect);
-  await page.getByRole("button", { name: "Time to build: A few hours" }).click();
-  await page.getByRole("group", { name: "Time to build" }).getByRole("button", { name: "A weekend" }).click();
+  await page
+    .getByRole("button", { name: "Time to build: A few hours" })
+    .click();
+  await page
+    .getByRole("group", { name: "Time to build" })
+    .getByRole("button", { name: "A weekend" })
+    .click();
   await page.getByRole("button", { name: "Mood: anything. Edit" }).click();
-  await page.getByRole("textbox", { name: "What are you in the mood for?" }).fill("cozy puzzles");
+  await page
+    .getByRole("textbox", { name: "What are you in the mood for?" })
+    .fill("cozy puzzles");
   await page.keyboard.press("Enter");
   await expect(page.getByRole("button", { name: "Mood: cozy puzzles. Edit" }));
   await proof("tuned");
@@ -20,11 +27,14 @@ export default async function ({ page, out, log, proof, noOverflow, expect }) {
   await dialog.getByRole("button", { name: "Save", exact: true }).click();
   await expect(dialog.getByRole("button", { name: "Saved", exact: true }));
   await dialog.getByRole("button", { name: "Love it" }).click();
-  await expect(dialog.locator('button[aria-pressed="true"]', { hasText: "Love it" }));
+  await expect(
+    dialog.locator('button[aria-pressed="true"]', { hasText: "Love it" }),
+  );
   await dialog.getByRole("button", { name: "Copy prompt" }).click();
   await expect(toast(page, "Prompt copied."));
   const copied = await page.evaluate(() => navigator.clipboard.readText());
-  if (copied.length < 100) throw new Error(`clipboard holds ${copied.length} chars`);
+  if (copied.length < 100)
+    throw new Error(`clipboard holds ${copied.length} chars`);
   log(`clipboard: ${copied.length} chars`);
   const [download] = await Promise.all([
     page.waitForEvent("download"),
@@ -35,7 +45,9 @@ export default async function ({ page, out, log, proof, noOverflow, expect }) {
   await dialog.getByRole("tab", { name: "Build prompt" }).click();
   await expect(dialog.getByRole("button", { name: "Edit prompt" }));
   await dialog.getByRole("tab", { name: /^Feedback/ }).click();
-  await dialog.getByRole("textbox", { name: "Your feedback" }).fill("Make it single-player only.");
+  await dialog
+    .getByRole("textbox", { name: "Your feedback" })
+    .fill("Make it single-player only.");
   await dialog.getByRole("button", { name: "Add feedback" }).click();
   await expect(toast(page, "Feedback saved."));
   await expect(dialog.getByRole("tab", { name: "Feedback (1)" }));
