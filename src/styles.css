@@ -329,10 +329,6 @@ time {
   font-size: 14px;
   width: 100%;
 }
-a.nav-link,
-.settings-group a {
-  color: inherit;
-}
 .nav-link.active {
   background: #e2eaf3;
   color: #203b65;
@@ -1234,6 +1230,27 @@ main:focus {
   align-items: center;
   justify-content: space-between;
 }
+.projects {
+  margin-top: 56px;
+}
+.projects > h2 {
+  font-size: 26px;
+  margin: 0 0 18px;
+}
+a.project-card {
+  color: inherit;
+}
+.project-card .idea-card-content h3 {
+  font-size: 23px;
+  margin: 14px 0 12px;
+}
+.project-card .idea-card-content p {
+  margin: 0;
+}
+.project-card .idea-card-footer {
+  padding-top: 10px;
+  padding-bottom: 16px;
+}
 .empty-state {
   display: flex;
   align-items: center;
@@ -1665,8 +1682,7 @@ main:focus {
   right: 0;
   border-top: 1px solid var(--border);
 }
-.settings-group button,
-.settings-group a {
+.settings-group button {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -1676,12 +1692,10 @@ main:focus {
   text-align: left;
   font-size: 15px;
 }
-.settings-group button:hover,
-.settings-group a:hover {
+.settings-group button:hover {
   background: #f3f1ea;
 }
-.settings-group button > svg:first-child,
-.settings-group a > svg:first-child {
+.settings-group button > svg:first-child {
   color: #5b6475;
 }
 .settings-row-label {

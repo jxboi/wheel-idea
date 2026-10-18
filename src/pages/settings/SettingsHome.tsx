@@ -4,13 +4,11 @@ import {
   CircleDot,
   HardDriveDownload,
   Leaf,
-  Rocket,
   ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
 import { categories, providerNames, type Workspace } from "../../lib/schema";
 import type { SettingsSection } from "./sections";
-import { LAUNCH_URL } from "../../components/Shell";
 
 type Row = [SettingsSection, string, LucideIcon, string];
 
@@ -69,19 +67,6 @@ export function SettingsHome({
             </ul>
           </section>
         ))}
-        <section className="settings-group">
-          <h2>Just for fun</h2>
-          <ul>
-            <li>
-              <a href={LAUNCH_URL} target="_blank" rel="noopener">
-                <Rocket size={20} strokeWidth={1.6} />
-                <span className="settings-row-label">Rocket launch</span>
-                <ChevronRight size={17} className="settings-row-chevron" />
-                <span className="sr-only">(opens in a new tab)</span>
-              </a>
-            </li>
-          </ul>
-        </section>
       </div>
     </>
   );

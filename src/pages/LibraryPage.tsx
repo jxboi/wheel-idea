@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Search, Bookmark, Trash2, ArrowRight, BookOpen } from "lucide-react";
 import { categories, type Idea } from "../lib/schema";
 import { categoryColors, categoryIcons } from "../components/Icons";
+import { ProjectLinks } from "../features/projects/ProjectLinks";
 export function LibraryPage({
   ideas,
   onOpen,
@@ -154,6 +155,7 @@ export function LibraryPage({
           </button>
         </div>
       )}
+      <ProjectLinks />
     </>
   );
 }
