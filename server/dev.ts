@@ -45,6 +45,9 @@ const server = createServer(async (req, res) => {
     await handler(req as ApiRequest, response);
     return;
   }
+  // Mirror the vercel.json rewrite so /rocket-launch works locally too.
+  if (req.url?.split("?")[0] === "/rocket-launch")
+    req.url = "/rocket-launch.html";
   vite.middlewares(req, res);
 });
 const port = Number(process.env.PORT) || 5173;
