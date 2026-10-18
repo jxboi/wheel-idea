@@ -5,9 +5,12 @@ import {
   Settings,
   Monitor,
   ChevronDown,
+  Rocket,
 } from "lucide-react";
 import { BrandMark } from "./Icons";
 import type { ReactNode } from "react";
+/** Standalone Three.js scene served from public/. */
+export const LAUNCH_URL = "/rocket-launch.html";
 export type Page = "wheel" | "library" | "journal" | "settings";
 const nav = [
   ["wheel", "The wheel", CircleDot],
@@ -49,6 +52,16 @@ export function Shell({
               <span>{label}</span>
             </button>
           ))}
+          <a
+            className="nav-link"
+            href={LAUNCH_URL}
+            target="_blank"
+            rel="noopener"
+            aria-label="Rocket launch, opens in a new tab"
+          >
+            <Rocket size={21} />
+            <span>Rocket launch</span>
+          </a>
         </nav>
         <div className="sidebar-bottom">
           <button

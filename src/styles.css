@@ -329,6 +329,10 @@ time {
   font-size: 14px;
   width: 100%;
 }
+a.nav-link,
+.settings-group a {
+  color: inherit;
+}
 .nav-link.active {
   background: #e2eaf3;
   color: #203b65;
@@ -1661,7 +1665,8 @@ main:focus {
   right: 0;
   border-top: 1px solid var(--border);
 }
-.settings-group button {
+.settings-group button,
+.settings-group a {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -1671,10 +1676,12 @@ main:focus {
   text-align: left;
   font-size: 15px;
 }
-.settings-group button:hover {
+.settings-group button:hover,
+.settings-group a:hover {
   background: #f3f1ea;
 }
-.settings-group button > svg:first-child {
+.settings-group button > svg:first-child,
+.settings-group a > svg:first-child {
   color: #5b6475;
 }
 .settings-row-label {
