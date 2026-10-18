@@ -16,4 +16,4 @@ Copy rule: one short line beats two. Mobile shows no subtitles on the wheel, no 
 
 Intentional functional additions: visible Offline preview label when no model is connected; category editing; status and error messages; optional session credentials. The wheel SVG is functional UI, not a raster asset.
 
-Rocket launch: `public/rocket-launch.html` is a standalone Three.js scene, separate from the app and its data. It opens in a new tab from a quiet sidebar link on desktop and from a “Just for fun” row in the Settings hub (the mobile bar stays at four items). It is not part of the first-screen copy list.
+Projects: the Idea library ends with a “Projects” section of cards for standalone projects, listed in `src/features/projects/projects.ts` (add an entry to link another). Cards reuse the idea-card styling and open in a new tab. The first is Rocket launch, `public/rocket-launch.html`, a standalone Three.js scene that shares no code or data with the app. It is not part of the first-screen copy list, and navigation is unchanged.
