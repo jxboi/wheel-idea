@@ -1,4 +1,5 @@
 # Orbit design system
+
 Reference: concept.png, generated with the built-in image tool. Brief: an editorial developer idea studio, tactile eight-sector wheel, personal context panel, persistent navigation, journal capture strip. Native UI, no stock imagery.
 
 Paper #f7f6f2; surface #fcfbf8; ink #202a3f; secondary #777d88; blue #45699f; border #dfdcd4. Lora serif for headings and wheel labels; DM Sans for interface. Sidebar 218px at desktop, content max-width 1320px. Heading 44px, section heading 26px, body 14px, metadata 11px. Mobile heading 32px and bottom navigation. Borders 1px; panel radius 14px; button radius 9px. Wheel is native SVG with pastel sectors, double ink rim, stationary hub and pointer. Lucide outline icons 1.6px strokes.
@@ -14,3 +15,5 @@ Allowed first-screen copy follows concept, kept deliberately short: Orbit; The w
 Copy rule: one short line beats two. Mobile shows no subtitles on the wheel, no idle captions, and no decorative helper text; every secondary label is 11px or larger and form fields are 16px to avoid iOS focus zoom.
 
 Intentional functional additions: visible Offline preview label when no model is connected; category editing; status and error messages; optional session credentials. The wheel SVG is functional UI, not a raster asset.
+
+Rocket launch: `public/rocket-launch.html` is a standalone Three.js scene, separate from the app and its data. It opens in a new tab from a quiet sidebar link on desktop and from a “Just for fun” row in the Settings hub (the mobile bar stays at four items). It is not part of the first-screen copy list.

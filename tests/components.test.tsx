@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { WheelPage } from "../src/pages/WheelPage";
 import { IdeaDetail } from "../src/components/IdeaDetail";
 import { SettingsPage } from "../src/pages/SettingsPage";
+import { Shell } from "../src/components/Shell";
 import { ActivityPanel } from "../src/features/generation/ActivityPanel";
 import { applyEvent, newActivity } from "../src/features/generation/activity";
 import { previewBrief } from "../src/lib/preview";
@@ -206,6 +207,14 @@ describe("SettingsPage", () => {
       expect(screen.getByRole("button", { name })).toBeTruthy();
   });
 
+  it("links to the rocket launch scene in a new tab", () => {
+    render(<SettingsPage {...props} section={null} onSection={() => {}} />);
+    const link = screen.getByRole("link", { name: /Rocket launch/ });
+    expect(link.getAttribute("href")).toBe("/rocket-launch.html");
+    expect(link.getAttribute("target")).toBe("_blank");
+    expect(link.getAttribute("rel")).toContain("noopener");
+  });
+
   it("shows the memory toggle on the memory sub-page and goes back", () => {
     const onSection = vi.fn();
     const onUseMemory = vi.fn();
@@ -223,5 +232,18 @@ describe("SettingsPage", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Settings" }));
     expect(onSection).toHaveBeenCalledWith(null);
+  });
+});
+
+describe("Shell", () => {
+  it("offers the rocket launch scene from the sidebar", () => {
+    render(
+      <Shell page="wheel" onNavigate={() => {}}>
+        <p>content</p>
+      </Shell>,
+    );
+    const link = screen.getByRole("link", { name: /Rocket launch/ });
+    expect(link.getAttribute("href")).toBe("/rocket-launch.html");
+    expect(link.getAttribute("target")).toBe("_blank");
   });
 });
